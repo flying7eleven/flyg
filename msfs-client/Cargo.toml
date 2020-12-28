@@ -1,8 +1,12 @@
 [package]
-name = "msfs-client"
+name = "flyg-msfs-client"
 version = "0.1.0"
 authors = ["Tim Hütz <tim+github@janke.biz>"]
 edition = "2018"
+
+[[bin]]
+name = "flyg-msfs-client"
+path = "src/main.rs"
 
 [build-dependencies.bindgen]
 version = "0.56"
