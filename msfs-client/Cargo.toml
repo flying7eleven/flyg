@@ -10,3 +10,6 @@ path = "src/main.rs"
 
 [build-dependencies.bindgen]
 version = "0.56"
+
+[dependencies.num_enum]
+version = "0.5"

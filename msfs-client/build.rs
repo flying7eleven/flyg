@@ -13,6 +13,14 @@ fn main() {
         .clang_args(&["-x", "c++"])
         .whitelist_function("SimConnect_Open")
         .whitelist_function("SimConnect_Close")
+        .whitelist_function("SimConnect_MapClientEventToSimEvent")
+        .whitelist_function("SimConnect_AddClientEventToNotificationGroup")
+        .whitelist_function("SimConnect_SetNotificationGroupPriority")
+        .whitelist_function("SimConnect_CallDispatch")
+        .whitelist_type("SIMCONNECT_RECV_EXCEPTION")
+        .whitelist_type("SIMCONNECT_RECV_EVENT")
+        .whitelist_type("SIMCONNECT_RECV_ID.*")
+        .whitelist_type("SIMCONNECT_GROUP_PRIORITY.*")
         .generate()
         .expect("Unable to generate bindings");
 
