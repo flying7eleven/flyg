@@ -199,10 +199,21 @@ impl SimConnect {
                     // this should not really happen at all and if it happens it indicates an issue
                     // with our wrapper code
                     _ => {
-                        error!("");
+                        error!("Could not process a received simulator event. This can could be due to an unhandled event or an issue with the simulator connection");
                         None
                     }
                 }
+            }
+
+            // there was an exception in one of the last requests. All required information to fix this
+            // issue are inside of the provided structure
+            bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_EXCEPTION => {
+                let exception_data =
+                    unsafe { *(data as *const bindings::SIMCONNECT_RECV_EXCEPTION) };
+                unsafe {
+                    error!("Exception (0x{:x}) during the execution of the command with the send message ID 0x{:x} (offset 0x{:x}, data 0x{:x})", exception_data.dwException, exception_data.dwSendID, exception_data.dwIndex, cb_data);
+                }
+                None
             }
 
             // we got an unknown event type. This is not really an issue because we simply do not
