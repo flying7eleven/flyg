@@ -16,11 +16,11 @@ fn main() {
         .whitelist_function("SimConnect_MapClientEventToSimEvent")
         .whitelist_function("SimConnect_AddClientEventToNotificationGroup")
         .whitelist_function("SimConnect_SetNotificationGroupPriority")
-        .whitelist_function("SimConnect_CallDispatch")
+        .whitelist_function("SimConnect_GetNextDispatch")
         .whitelist_type("SIMCONNECT_RECV_EXCEPTION")
         .whitelist_type("SIMCONNECT_RECV_EVENT")
-        .whitelist_type("SIMCONNECT_RECV_ID.*")
-        .whitelist_type("SIMCONNECT_GROUP_PRIORITY.*")
+        .whitelist_type("SIMCONNECT_RECV_ID")
+        .whitelist_var("SIMCONNECT_GROUP_PRIORITY_STANDARD")
         .generate()
         .expect("Unable to generate bindings");
 
