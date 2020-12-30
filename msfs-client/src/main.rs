@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 fn initialize_logging() {
     use chrono::Local;
     use log::LevelFilter;
@@ -36,6 +38,11 @@ fn main() {
     simulator_connection
         .register_event(event)
         .expect("No break association!");
+
+    simulator_connection.display_message_to_user(
+        "Flyg connected to the simulator".to_string(),
+        Duration::from_secs(5),
+    );
 
     loop {
         match simulator_connection.get_next_notification() {

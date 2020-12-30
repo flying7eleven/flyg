@@ -1,18 +1,21 @@
 use crate::bindings;
 use num_enum::TryFromPrimitive;
 use std::convert::TryFrom;
-use std::ffi::c_void;
+use std::ffi::{c_void, CString};
+use std::time::Duration;
 
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 pub enum Events {
     Brakes,
+    UserTextDisplay,
 }
 
 impl Events {
     fn as_c_str(self) -> *const u8 {
         match self {
             Events::Brakes => "brakes\0".as_ptr(),
+            Events::UserTextDisplay => std::ptr::null(),
         }
     }
 }
@@ -96,6 +99,40 @@ impl SimConnect {
         Ok(())
     }
 
+    pub fn display_message_to_user(&self, message: String, duration: Duration) {
+        use log::error;
+
+        // get a C-style representation of the string we want to display to the user
+        let text_to_display = match CString::new(message.clone()) {
+            Ok(message_as_cstring) => message_as_cstring,
+            Err(_) => {
+                error!("Could not convert message ({}) to a CString", message);
+                return;
+            }
+        };
+
+        // send the text to the SimConnect interface to be displayed to the user
+        let sim_connect_text_result = unsafe {
+            bindings::SimConnect_Text(
+                self.handle.as_ptr(),
+                bindings::SIMCONNECT_TEXT_TYPE_SIMCONNECT_TEXT_TYPE_PRINT_WHITE,
+                duration.as_secs() as f32,
+                Events::UserTextDisplay as u32,
+                (message.len() + 1) as u32,
+                text_to_display.as_ptr() as *mut std::ffi::c_void,
+            )
+        };
+
+        // there is nothing we can do if the call failed, but at least log an error so we can fix the
+        // issue in a future version
+        if 0x0 != sim_connect_text_result {
+            error!(
+                "Failed to call SimConnect_Text. The result was 0x{:x}",
+                sim_connect_text_result
+            );
+        }
+    }
+
     pub fn get_next_notification(&self) -> Option<Notification> {
         use log::{error, trace};
 
@@ -153,6 +190,11 @@ impl SimConnect {
                 match Events::try_from(event.uEventID) {
                     // the brakes were pressed / released (TODO: differentiate between the brake states)
                     Ok(Events::Brakes) => Some(Notification::Brakes),
+
+                    // this event is emitted if a request from the user to display text in the simulator
+                    // was executed, nothing we have to do here so we can just ignore it and return a
+                    // None
+                    Ok(Events::UserTextDisplay) => None,
 
                     // this should not really happen at all and if it happens it indicates an issue
                     // with our wrapper code

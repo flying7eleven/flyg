@@ -17,6 +17,7 @@ fn main() {
         .whitelist_function("SimConnect_AddClientEventToNotificationGroup")
         .whitelist_function("SimConnect_SetNotificationGroupPriority")
         .whitelist_function("SimConnect_GetNextDispatch")
+        .whitelist_function("SimConnect_Text")
         .whitelist_type("SIMCONNECT_RECV_EXCEPTION")
         .whitelist_type("SIMCONNECT_RECV_EVENT")
         .whitelist_type("SIMCONNECT_RECV_ID")
