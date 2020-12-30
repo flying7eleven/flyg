@@ -52,6 +52,6 @@ fn main() {
             Some(Notification::Brakes) => info!("Brakes!"),
             None => {}
         }
-        std::thread::sleep(std::time::Duration::from_secs(1));
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }
