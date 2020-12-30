@@ -32,7 +32,7 @@ fn main() {
 
     let simulator_connection = match SimConnect::new() {
         Ok(connection) => connection,
-        Err(error_code) => panic!("Could not connect to the simulator: 0x{:x}", error_code),
+        Err(error_message) => panic!("Could not connect to the simulator: {}", error_message),
     };
 
     //

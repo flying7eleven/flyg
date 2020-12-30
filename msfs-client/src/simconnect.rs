@@ -37,11 +37,11 @@ pub struct SimConnect {
 }
 
 impl SimConnect {
-    pub fn new() -> Result<Self, i32> {
+    pub fn new() -> Result<Self, String> {
         let mut handle = std::ptr::null_mut();
         let name = b"flyg-msfs-client\0" as *const u8 as *const i8;
 
-        //
+        // try to connect to the local SimConnect server (e.g. the simulator)
         let open_result = unsafe {
             bindings::SimConnect_Open(
                 &mut handle,
@@ -52,11 +52,27 @@ impl SimConnect {
                 0,
             )
         };
+
+        // check if the call to SimConnect_Open was successful or not and return a proper error message,
+        // if the call failed
         if 0x0 != open_result {
-            return Err(open_result);
+            return Err(format!(
+                "The call to SimConnect_Open failed with a return code of 0x{:x}",
+                open_result
+            ));
         }
-        Ok(Self {
-            handle: std::ptr::NonNull::new(handle).expect("Foo"),
+
+        // try to create a NonNull instance from the returned connection handle
+        let simconnect_handle = match std::ptr::NonNull::new(handle) {
+            Some(real_handle) => real_handle,
+            None => {
+                return Err("The returned SimConnect handle was NULL which is not okay according to the API specifications".to_string());
+            }
+        };
+
+        // return the new SimConnect instance
+        Ok(SimConnect {
+            handle: simconnect_handle,
         })
     }
 
