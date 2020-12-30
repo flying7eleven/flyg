@@ -14,7 +14,7 @@ pub enum Events {
 impl Events {
     fn as_c_str(self) -> *const u8 {
         match self {
-            Events::Brakes => "brakes\0".as_ptr(),
+            Events::Brakes => "BRAKES\0".as_ptr(),
             Events::UserTextDisplay => std::ptr::null(),
         }
     }
