@@ -30,13 +30,14 @@ fn main() {
 
     initialize_logging();
 
-    let event = Events::Brakes;
     let simulator_connection = match SimConnect::new() {
         Ok(connection) => connection,
         Err(error_code) => panic!("Could not connect to the simulator: 0x{:x}", error_code),
     };
+
+    //
     simulator_connection
-        .register_event(event)
+        .register_event(Events::Brakes)
         .expect("No break association!");
 
     simulator_connection.display_message_to_user(
