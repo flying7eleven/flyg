@@ -6,23 +6,23 @@ use std::time::Duration;
 
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
-pub enum Events {
+pub enum Event {
     Brakes,
     UserTextDisplay,
 }
 
-impl Events {
+impl Event {
     fn as_c_str(self) -> *const u8 {
         match self {
-            Events::Brakes => "BRAKES\0".as_ptr(),
-            Events::UserTextDisplay => std::ptr::null(),
+            Event::Brakes => "BRAKES\0".as_ptr(),
+            Event::UserTextDisplay => std::ptr::null(),
         }
     }
 }
 
 #[repr(u32)]
 #[derive(Copy, Clone)]
-pub enum Groups {
+pub enum Group {
     Group0,
 }
 
@@ -76,7 +76,8 @@ impl SimConnect {
         })
     }
 
-    pub fn register_event(&self, event: Events) -> Result<(), i32> {
+    pub fn register_event(&self, event: Event) -> Result<(), i32> {
+        //
         let map_client_event_to_sim_event_result = unsafe {
             bindings::SimConnect_MapClientEventToSimEvent(
                 self.handle.as_ptr(),
@@ -84,11 +85,14 @@ impl SimConnect {
                 event.as_c_str() as *const i8,
             )
         };
+
+        //
         if 0x0 != map_client_event_to_sim_event_result {
             return Err(map_client_event_to_sim_event_result);
         }
 
-        let group = Groups::Group0;
+        //
+        let group = Group::Group0;
         let add_client_event_to_notification_group_result = unsafe {
             bindings::SimConnect_AddClientEventToNotificationGroup(
                 self.handle.as_ptr(),
@@ -97,10 +101,13 @@ impl SimConnect {
                 0,
             )
         };
+
+        //
         if 0x0 != add_client_event_to_notification_group_result {
             return Err(add_client_event_to_notification_group_result);
         }
 
+        //
         let set_notification_group_priority_result = unsafe {
             bindings::SimConnect_SetNotificationGroupPriority(
                 self.handle.as_ptr(),
@@ -108,10 +115,13 @@ impl SimConnect {
                 bindings::SIMCONNECT_GROUP_PRIORITY_STANDARD,
             )
         };
+
+        //
         if 0x0 != set_notification_group_priority_result {
             return Err(set_notification_group_priority_result);
         }
 
+        //
         Ok(())
     }
 
@@ -133,7 +143,7 @@ impl SimConnect {
                 self.handle.as_ptr(),
                 bindings::SIMCONNECT_TEXT_TYPE_SIMCONNECT_TEXT_TYPE_PRINT_WHITE,
                 duration.as_secs() as f32,
-                Events::UserTextDisplay as u32,
+                Event::UserTextDisplay as u32,
                 (message.len() + 1) as u32,
                 text_to_display.as_ptr() as *mut std::ffi::c_void,
             )
@@ -203,14 +213,14 @@ impl SimConnect {
             // the the proper data structure we can return
             bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_EVENT => {
                 let event = unsafe { *(data as *const bindings::SIMCONNECT_RECV_EVENT) };
-                match Events::try_from(event.uEventID) {
+                match Event::try_from(event.uEventID) {
                     // the brakes were pressed / released (TODO: differentiate between the brake states)
-                    Ok(Events::Brakes) => Some(Notification::Brakes),
+                    Ok(Event::Brakes) => Some(Notification::Brakes),
 
                     // this event is emitted if a request from the user to display text in the simulator
                     // was executed, nothing we have to do here so we can just ignore it and return a
                     // None
-                    Ok(Events::UserTextDisplay) => None,
+                    Ok(Event::UserTextDisplay) => None,
 
                     // this should not really happen at all and if it happens it indicates an issue
                     // with our wrapper code

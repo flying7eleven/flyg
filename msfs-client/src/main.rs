@@ -25,7 +25,7 @@ fn initialize_logging() {
 }
 
 fn main() {
-    use flyg_msfs_client::simconnect::{Events, Notification, SimConnect};
+    use flyg_msfs_client::simconnect::{Event, Notification, SimConnect};
     use log::info;
 
     initialize_logging();
@@ -37,7 +37,7 @@ fn main() {
 
     //
     simulator_connection
-        .register_event(Events::Brakes)
+        .register_event(Event::Brakes)
         .expect("No break association!");
 
     simulator_connection.display_message_to_user(
