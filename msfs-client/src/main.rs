@@ -40,6 +40,11 @@ fn main() {
         .register_event(Event::Brakes)
         .expect("No break association!");
 
+    //
+    simulator_connection
+        .request_position_updates()
+        .expect("No position update!");
+
     simulator_connection.display_message_to_user(
         "Flyg connected to the simulator".to_string(),
         Duration::from_secs(5),

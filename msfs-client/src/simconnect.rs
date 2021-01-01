@@ -76,6 +76,85 @@ impl SimConnect {
         })
     }
 
+    pub fn request_position_updates(&self) -> Result<(), i32> {
+        use log::error;
+
+        let data_definition_id = 100;
+        let request_id = 200;
+
+        let mut add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle.as_ptr(),
+                data_definition_id,
+                "PLANE LATITUDE\0".as_ptr() as *const i8,
+                "Degrees\0".as_ptr() as *const i8,
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle.as_ptr(),
+                data_definition_id,
+                "PLANE LONGITUDE\0".as_ptr() as *const i8,
+                "Degrees\0".as_ptr() as *const i8,
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle.as_ptr(),
+                data_definition_id,
+                "PLANE ALTITUDE\0".as_ptr() as *const i8,
+                "Degrees\0".as_ptr() as *const i8,
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        let request_data_on_sim_object_result = unsafe {
+            bindings::SimConnect_RequestDataOnSimObject(
+                self.handle.as_ptr(),
+                request_id,
+                data_definition_id,
+                0,
+                bindings::SIMCONNECT_CLIENT_DATA_PERIOD_SIMCONNECT_CLIENT_DATA_PERIOD_SECOND,
+                0,
+                0,
+                0,
+                0,
+            )
+        };
+
+        if 0x0 != request_data_on_sim_object_result {
+            error!("FAIL!");
+            return Err(request_data_on_sim_object_result);
+        }
+
+        Ok(())
+    }
+
     pub fn register_event(&self, event: Event) -> Result<(), i32> {
         //
         let map_client_event_to_sim_event_result = unsafe {
@@ -229,6 +308,13 @@ impl SimConnect {
                         None
                     }
                 }
+            }
+
+            // we got an update to a simulator object we requested for. This could be caused by a periodic
+            // interval or even an exceeded epsilon on a datum (based on the way the update was requested).
+            bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_SIMOBJECT_DATA => {
+                trace!("SIMCONNECT_RECV_ID_SIMOBJECT_DATA");
+                None
             }
 
             // there was an exception in one of the last requests. All required information to fix this
