@@ -25,6 +25,7 @@ pub enum Group {
 pub enum Notification {
     Connected,
     Disconnected,
+    Position(PositionInformation),
 }
 
 #[repr(u32)]
@@ -39,10 +40,11 @@ enum ClientDataDefinition {
     AircraftPositionInformation,
 }
 
-struct PositionInformation {
-    latitude: f64,
-    longitude: f64,
-    altitude: f64,
+#[derive(Copy, Clone)]
+pub struct PositionInformation {
+    pub latitude: f64,
+    pub longitude: f64,
+    pub altitude: f64,
 }
 
 pub struct SimConnect {
@@ -199,7 +201,7 @@ impl SimConnect {
     }
 
     pub fn get_next_notification(&self) -> Option<Notification> {
-        use log::{error, trace};
+        use log::{error, trace, warn};
         use std::mem::transmute_copy;
 
         //
@@ -275,21 +277,21 @@ impl SimConnect {
                     transmute_copy(&(data as *const bindings::SIMCONNECT_RECV_SIMOBJECT_DATA))
                 };
                 match Request::try_from(object_data.dwRequestID) {
+                    // we receive this request response for the current aircraft position of the user, we simply
+                    // have to convert the pointer to the memory space to the structure we know and return it
+                    // to the user
                     Ok(Request::AircraftPositionRequest) => {
                         let position_data: &PositionInformation =
                             unsafe { transmute_copy(&&object_data.dwData) };
-                        trace!(
-                            "Lat: {}, Long: {}, Alt: {}",
-                            position_data.latitude,
-                            position_data.longitude,
-                            position_data.altitude
-                        );
-                        None
+                        Some(Notification::Position(position_data.clone()))
                     }
 
+                    // we received the answer to a request we are currently not handling. Log a warning since this
+                    // should never happen. If we request information on simulator object updates, we should handle
+                    // the responses
                     _ => {
                         unsafe {
-                            trace!("Got SimObject for the request with the ID 0x{:x}, which was not handled", object_data.dwRequestID)
+                            warn!("Got SimObject for the request with the ID 0x{:x}, which was not handled", object_data.dwRequestID)
                         };
                         None
                     }

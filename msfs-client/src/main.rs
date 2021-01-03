@@ -42,6 +42,9 @@ fn main() {
         match simulator_connection.get_next_notification() {
             Some(Notification::Connected) => info!("Connection opened!"),
             Some(Notification::Disconnected) => info!("Connection closed!"),
+            Some(Notification::Position(position)) => {
+                info!("Position update. Altitude: {:.0}ft", position.altitude)
+            }
             None => {}
         }
         std::thread::sleep(std::time::Duration::from_millis(100));
