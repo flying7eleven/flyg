@@ -16,12 +16,6 @@ pub enum Event {
     UserTextDisplay,
 }
 
-#[repr(u32)]
-#[derive(Copy, Clone)]
-pub enum Group {
-    Group0,
-}
-
 pub enum Notification {
     Connected,
     Disconnected,
