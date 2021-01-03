@@ -4,6 +4,12 @@ use std::convert::TryFrom;
 use std::ffi::{c_void, CString};
 use std::time::Duration;
 
+macro_rules! as_c_string {
+    ($target:expr) => {
+        std::ffi::CString::new($target).unwrap().as_ptr();
+    };
+}
+
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 pub enum Event {
@@ -39,13 +45,12 @@ pub struct SimConnect {
 impl SimConnect {
     pub fn new() -> Result<Self, String> {
         let mut handle = std::ptr::null_mut();
-        let name = b"flyg-msfs-client\0" as *const u8 as *const i8;
 
         // try to connect to the local SimConnect server (e.g. the simulator)
         let open_result = unsafe {
             bindings::SimConnect_Open(
                 &mut handle,
-                name,
+                as_c_string!("flyg-msfs-client"),
                 std::ptr::null_mut(),
                 0,
                 std::ptr::null_mut(),
@@ -86,8 +91,8 @@ impl SimConnect {
             bindings::SimConnect_AddToDataDefinition(
                 self.handle.as_ptr(),
                 data_definition_id,
-                "PLANE LATITUDE\0".as_ptr() as *const i8,
-                "Degrees\0".as_ptr() as *const i8,
+                as_c_string!("PLANE LATITUDE"),
+                as_c_string!("Degrees"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
                 0.0,
                 bindings::SIMCONNECT_UNUSED,
@@ -103,8 +108,8 @@ impl SimConnect {
             bindings::SimConnect_AddToDataDefinition(
                 self.handle.as_ptr(),
                 data_definition_id,
-                "PLANE LONGITUDE\0".as_ptr() as *const i8,
-                "Degrees\0".as_ptr() as *const i8,
+                as_c_string!("PLANE LONGITUDE"),
+                as_c_string!("Degrees"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
                 0.0,
                 bindings::SIMCONNECT_UNUSED,
@@ -120,8 +125,8 @@ impl SimConnect {
             bindings::SimConnect_AddToDataDefinition(
                 self.handle.as_ptr(),
                 data_definition_id,
-                "PLANE ALTITUDE\0".as_ptr() as *const i8,
-                "Degrees\0".as_ptr() as *const i8,
+                as_c_string!("PLANE ALTITUDE"),
+                as_c_string!("Feet"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
                 0.0,
                 bindings::SIMCONNECT_UNUSED,
