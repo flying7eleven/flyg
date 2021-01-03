@@ -38,6 +38,12 @@ pub enum Notification {
     Brakes,
 }
 
+struct PositionInformation {
+    latitude: f64,
+    longitude: f64,
+    altitude: f64,
+}
+
 pub struct SimConnect {
     handle: std::ptr::NonNull<c_void>,
 }
@@ -143,9 +149,9 @@ impl SimConnect {
                 self.handle.as_ptr(),
                 request_id,
                 data_definition_id,
-                0,
-                bindings::SIMCONNECT_CLIENT_DATA_PERIOD_SIMCONNECT_CLIENT_DATA_PERIOD_SECOND,
-                0,
+                bindings::SIMCONNECT_OBJECT_ID_USER,
+                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_VISUAL_FRAME,
+                bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
                 0,
                 0,
                 0,
@@ -245,6 +251,7 @@ impl SimConnect {
 
     pub fn get_next_notification(&self) -> Option<Notification> {
         use log::{error, trace};
+        use std::mem::transmute_copy;
 
         //
         let mut data: *mut bindings::SIMCONNECT_RECV = std::ptr::null_mut();
@@ -318,8 +325,30 @@ impl SimConnect {
             // we got an update to a simulator object we requested for. This could be caused by a periodic
             // interval or even an exceeded epsilon on a datum (based on the way the update was requested).
             bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_SIMOBJECT_DATA => {
-                trace!("SIMCONNECT_RECV_ID_SIMOBJECT_DATA");
-                None
+                let object_data: &bindings::SIMCONNECT_RECV_SIMOBJECT_DATA = unsafe {
+                    transmute_copy(&(data as *const bindings::SIMCONNECT_RECV_SIMOBJECT_DATA))
+                };
+                match object_data.dwRequestID {
+                    200 => {
+                        unsafe { assert_eq!(object_data.dwDefineID, 100) };
+                        let position_data: &PositionInformation =
+                            unsafe { transmute_copy(&&object_data.dwData) };
+                        trace!(
+                            "Lat: {}, Long: {}, Alt: {}",
+                            position_data.latitude,
+                            position_data.longitude,
+                            position_data.altitude
+                        );
+                        None
+                    }
+
+                    _ => {
+                        unsafe {
+                            trace!("Got SimObject for the request with the ID 0x{:x}, which was not handled", object_data.dwRequestID)
+                        };
+                        None
+                    }
+                }
             }
 
             // there was an exception in one of the last requests. All required information to fix this

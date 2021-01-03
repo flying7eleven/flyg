@@ -24,9 +24,12 @@ fn main() {
         .whitelist_type("SIMCONNECT_CLIENT_DATA_PERIOD")
         .whitelist_type("SIMCONNECT_RECV_EXCEPTION")
         .whitelist_type("SIMCONNECT_RECV_EVENT")
+        .whitelist_type("SIMCONNECT_RECV_SIMOBJECT_DATA")
         .whitelist_type("SIMCONNECT_RECV_ID")
         .whitelist_var("SIMCONNECT_GROUP_PRIORITY_STANDARD")
         .whitelist_var("SIMCONNECT_UNUSED")
+        .whitelist_var("SIMCONNECT_OBJECT_ID_USER")
+        .whitelist_var("SIMCONNECT_DATA_REQUEST_FLAG_CHANGED")
         .generate()
         .expect("Unable to generate bindings");
 
