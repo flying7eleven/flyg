@@ -38,6 +38,18 @@ pub enum Notification {
     Brakes,
 }
 
+#[repr(u32)]
+#[derive(Copy, Clone, TryFromPrimitive)]
+enum Request {
+    AircraftPositionRequest,
+}
+
+#[repr(u32)]
+#[derive(Copy, Clone, TryFromPrimitive)]
+enum ClientDataDefinition {
+    AircraftPositionInformation,
+}
+
 struct PositionInformation {
     latitude: f64,
     longitude: f64,
@@ -90,13 +102,10 @@ impl SimConnect {
     pub fn request_position_updates(&self) -> Result<(), i32> {
         use log::error;
 
-        let data_definition_id = 100;
-        let request_id = 200;
-
         let mut add_to_data_definition_result = unsafe {
             bindings::SimConnect_AddToDataDefinition(
                 self.handle.as_ptr(),
-                data_definition_id,
+                ClientDataDefinition::AircraftPositionInformation as u32,
                 as_c_string!("PLANE LATITUDE"),
                 as_c_string!("Degrees"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
@@ -113,7 +122,7 @@ impl SimConnect {
         add_to_data_definition_result = unsafe {
             bindings::SimConnect_AddToDataDefinition(
                 self.handle.as_ptr(),
-                data_definition_id,
+                ClientDataDefinition::AircraftPositionInformation as u32,
                 as_c_string!("PLANE LONGITUDE"),
                 as_c_string!("Degrees"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
@@ -130,7 +139,7 @@ impl SimConnect {
         add_to_data_definition_result = unsafe {
             bindings::SimConnect_AddToDataDefinition(
                 self.handle.as_ptr(),
-                data_definition_id,
+                ClientDataDefinition::AircraftPositionInformation as u32,
                 as_c_string!("PLANE ALTITUDE"),
                 as_c_string!("Feet"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
@@ -147,8 +156,8 @@ impl SimConnect {
         let request_data_on_sim_object_result = unsafe {
             bindings::SimConnect_RequestDataOnSimObject(
                 self.handle.as_ptr(),
-                request_id,
-                data_definition_id,
+                Request::AircraftPositionRequest as u32,
+                ClientDataDefinition::AircraftPositionInformation as u32,
                 bindings::SIMCONNECT_OBJECT_ID_USER,
                 bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_VISUAL_FRAME,
                 bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
@@ -328,9 +337,8 @@ impl SimConnect {
                 let object_data: &bindings::SIMCONNECT_RECV_SIMOBJECT_DATA = unsafe {
                     transmute_copy(&(data as *const bindings::SIMCONNECT_RECV_SIMOBJECT_DATA))
                 };
-                match object_data.dwRequestID {
-                    200 => {
-                        unsafe { assert_eq!(object_data.dwDefineID, 100) };
+                match Request::try_from(object_data.dwRequestID) {
+                    Ok(Request::AircraftPositionRequest) => {
                         let position_data: &PositionInformation =
                             unsafe { transmute_copy(&&object_data.dwData) };
                         trace!(
