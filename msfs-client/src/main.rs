@@ -25,7 +25,7 @@ fn initialize_logging() {
 }
 
 fn main() {
-    use flyg_msfs_client::simconnect::{Event, Notification, SimConnect};
+    use flyg_msfs_client::simconnect::{Notification, SimConnect};
     use log::info;
 
     initialize_logging();
@@ -34,11 +34,6 @@ fn main() {
         Ok(connection) => connection,
         Err(error_message) => panic!("Could not connect to the simulator: {}", error_message),
     };
-
-    //
-    simulator_connection
-        .register_event(Event::Brakes)
-        .expect("No break association!");
 
     //
     simulator_connection
@@ -54,7 +49,6 @@ fn main() {
         match simulator_connection.get_next_notification() {
             Some(Notification::Connected) => info!("Connection opened!"),
             Some(Notification::Disconnected) => info!("Connection closed!"),
-            Some(Notification::Brakes) => info!("Brakes!"),
             None => {}
         }
         std::thread::sleep(std::time::Duration::from_millis(100));

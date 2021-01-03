@@ -13,17 +13,7 @@ macro_rules! as_c_string {
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 pub enum Event {
-    Brakes,
     UserTextDisplay,
-}
-
-impl Event {
-    fn as_c_str(self) -> *const u8 {
-        match self {
-            Event::Brakes => "BRAKES\0".as_ptr(),
-            Event::UserTextDisplay => std::ptr::null(),
-        }
-    }
 }
 
 #[repr(u32)]
@@ -35,7 +25,6 @@ pub enum Group {
 pub enum Notification {
     Connected,
     Disconnected,
-    Brakes,
 }
 
 #[repr(u32)]
@@ -175,55 +164,6 @@ impl SimConnect {
         Ok(())
     }
 
-    pub fn register_event(&self, event: Event) -> Result<(), i32> {
-        //
-        let map_client_event_to_sim_event_result = unsafe {
-            bindings::SimConnect_MapClientEventToSimEvent(
-                self.handle.as_ptr(),
-                event as u32,
-                event.as_c_str() as *const i8,
-            )
-        };
-
-        //
-        if 0x0 != map_client_event_to_sim_event_result {
-            return Err(map_client_event_to_sim_event_result);
-        }
-
-        //
-        let group = Group::Group0;
-        let add_client_event_to_notification_group_result = unsafe {
-            bindings::SimConnect_AddClientEventToNotificationGroup(
-                self.handle.as_ptr(),
-                group as u32,
-                event as u32,
-                0,
-            )
-        };
-
-        //
-        if 0x0 != add_client_event_to_notification_group_result {
-            return Err(add_client_event_to_notification_group_result);
-        }
-
-        //
-        let set_notification_group_priority_result = unsafe {
-            bindings::SimConnect_SetNotificationGroupPriority(
-                self.handle.as_ptr(),
-                group as u32,
-                bindings::SIMCONNECT_GROUP_PRIORITY_STANDARD,
-            )
-        };
-
-        //
-        if 0x0 != set_notification_group_priority_result {
-            return Err(set_notification_group_priority_result);
-        }
-
-        //
-        Ok(())
-    }
-
     pub fn display_message_to_user(&self, message: String, duration: Duration) {
         use log::error;
 
@@ -314,9 +254,6 @@ impl SimConnect {
             bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_EVENT => {
                 let event = unsafe { *(data as *const bindings::SIMCONNECT_RECV_EVENT) };
                 match Event::try_from(event.uEventID) {
-                    // the brakes were pressed / released (TODO: differentiate between the brake states)
-                    Ok(Event::Brakes) => Some(Notification::Brakes),
-
                     // this event is emitted if a request from the user to display text in the simulator
                     // was executed, nothing we have to do here so we can just ignore it and return a
                     // None
