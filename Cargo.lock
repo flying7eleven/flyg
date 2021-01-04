@@ -126,9 +126,9 @@ dependencies = [
 
 [[package]]
 name = "derivative"
-version = "2.1.1"
+version = "2.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb582b60359da160a9477ee80f15c8d784c477e69c217ef2cdd4169c24ea380f"
+checksum = "eaed5874effa6cde088c644ddcdcb4ffd1511391c5be4fdd7a5ccd02c7e4a183"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -158,7 +158,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "flyg-msfs-client"
+name = "flyg"
 version = "0.1.0"
 dependencies = [
  "bindgen",
@@ -166,6 +166,16 @@ dependencies = [
  "fern",
  "log",
  "num_enum",
+]
+
+[[package]]
+name = "flyg-client"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "fern",
+ "flyg",
+ "log",
 ]
 
 [[package]]
@@ -360,9 +370,9 @@ checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 
 [[package]]
 name = "syn"
-version = "1.0.56"
+version = "1.0.57"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9802ddde94170d186eeee5005b798d9c159fa970403f1be19976d0cfb939b72"
+checksum = "4211ce9909eb971f111059df92c45640aad50a619cf55cd76476be803c4c68e6"
 dependencies = [
  "proc-macro2",
  "quote",

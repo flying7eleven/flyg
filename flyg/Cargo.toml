@@ -1,0 +1,20 @@
+[package]
+name = "flyg"
+version = "0.1.0"
+authors = ["Tim Hütz <tim+github@janke.biz>"]
+edition = "2018"
+
+[build-dependencies.bindgen]
+version = "0.56"
+
+[dependencies.num_enum]
+version = "0.5"
+
+[dependencies.chrono]
+version = "0.4"
+
+[dependencies.fern]
+version = "0.6"
+
+[dependencies.log]
+version = "0.4"

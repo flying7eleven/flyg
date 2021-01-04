@@ -23,7 +23,7 @@ fn initialize_logging() {
 }
 
 fn main() {
-    use flyg_msfs_client::simconnect::{Notification, SimConnect};
+    use flyg::simconnect::{Notification, SimConnect};
     use log::info;
 
     initialize_logging();

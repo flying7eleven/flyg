@@ -1,5 +1,6 @@
 [workspace]
 
 members = [
-    "msfs-client",
+    "flyg",
+    "flyg-client"
 ]
