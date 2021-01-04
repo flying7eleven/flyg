@@ -12,7 +12,11 @@ pub struct TrackingView {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum TrackingMessage {}
+pub enum TrackingMessage {
+    ConnectButtonPressed,
+    DisconnectButtonPressed,
+    StartTrackingPressed,
+}
 
 impl Sandbox for TrackingView {
     type Message = TrackingMessage;
@@ -34,9 +38,9 @@ impl Sandbox for TrackingView {
             .spacing(10)
             .push(Text::new("Flyg").size(50))
             .push(Text::new("Before any tracking can start, you have to successfully connect to the simulator. Do this, by pressing the 'Connect' button:"))
-            .push(Row::new().spacing(10).push(Button::new(&mut self.connect_button, Text::new("Connect"))).push(Button::new(&mut self.disconnect_button, Text::new("Disconnect"))))
+            .push(Row::new().spacing(10).push(Button::new(&mut self.connect_button, Text::new("Connect")).on_press(TrackingMessage::ConnectButtonPressed)).push(Button::new(&mut self.disconnect_button, Text::new("Disconnect")).on_press(TrackingMessage::DisconnectButtonPressed)))
             .push(Text::new("As soon as you are connected to the simulator and a plane is loaded up, you can start the tracking by pressing the 'Start tracking now' button:"))
-            .push(Button::new(&mut self.start_tracking_button, Text::new("Start tracking now")))
+            .push(Button::new(&mut self.start_tracking_button, Text::new("Start tracking now")).on_press(TrackingMessage::StartTrackingPressed))
             .push(Row::new().spacing(10).push(Text::new("Longitude:")).push(Text::new(&self.longitude.to_string())))
             .push(Row::new().spacing(10).push(Text::new("Latitude:")).push(Text::new(&self.latitude.to_string())))
             .push(Row::new().spacing(10).push(Text::new("Altitude:")).push(Text::new(&self.altitude.to_string())))
