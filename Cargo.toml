@@ -3,5 +3,6 @@
 members = [
     "flyg",
     "flyg-client",
-    "flyg-gui"
+    "flyg-gui",
+    "flyg-backend",
 ]
