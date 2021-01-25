@@ -1,0 +1,14 @@
+version: "2"
+services:
+  flyg_dev_database:
+    container_name: flyg_dev_database
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=debuguser
+      - POSTGRES_PASSWORD=debugpassword
+      - POSTGRES_DB=flyg
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    restart: "no"
+    ports:
+      - "5432:5432"
