@@ -3,3 +3,10 @@ name = "flyg-backend"
 version = "0.1.0"
 authors = ["Tim Hütz <tim+github@janke.biz>"]
 edition = "2018"
+
+[dependencies.diesel]
+version = "1.4"
+features = ["postgres"]
+
+[dependencies.rocket]
+version = "0.4"
