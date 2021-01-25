@@ -10,3 +10,19 @@ features = ["postgres"]
 
 [dependencies.rocket]
 version = "0.4"
+
+[dependencies.serde]
+version = "1.0"
+
+[dependencies.schemars]
+version = "0.8"
+
+[dependencies.rocket_contrib]
+version = "0.4"
+
+[dependencies.okapi]
+version = "0.5.0-alpha-1"
+features = ["derive_json_schema"]
+
+[dependencies.rocket_okapi]
+version = "0.6.0-alpha-1"
