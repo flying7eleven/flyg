@@ -1,4 +1,6 @@
-use crate::database::airports::{get_information_for_icao_code, FlygDatabaseError};
+use crate::database::airports::{
+    get_information_for_icao_code, get_runway_information_for_icao_code, FlygDatabaseError,
+};
 use rocket::http::Status;
 use rocket::{get, post, State};
 use rocket_contrib::json::Json;
@@ -22,10 +24,10 @@ pub struct RunwayInformation {
     length: u16,
     /// The width of the runway in meters.
     width: u8,
-    /// The first (main) direction of the airport (e.g. 25).
-    direction_one: u8,
-    /// The second direction of the airport (e.g. 7).
-    direction_two: u8,
+    /// The primary direction of the runway in degree (magnetic north, e.g. 252).
+    primary_direction: u16,
+    /// The second direction of the runway in degree (magnetic north, e.g. 7).
+    secondary_direction: u16,
 }
 
 /// Information about a specific airport.
@@ -61,16 +63,48 @@ pub fn get_airport_information(
 
     // try to query the information about the requested airport and return them
     return match get_information_for_icao_code(db_url.inner(), &icao_code.to_uppercase()) {
-        Ok(airport_infos) => Ok(Json(AirportInformation {
-            icao_code: airport_infos.icao_code,
-            country_code: airport_infos.country,
-            name: airport_infos.name,
-            position: Coordinates {
-                latitude: airport_infos.latitude,
-                longitude: airport_infos.longitude,
-            },
-            runways: vec![],
-        })),
+        Ok(airport_infos) => {
+            // since the airport was found, we now can query the airports which are associated
+            // to it
+            let raw_runway_information = match get_runway_information_for_icao_code(
+                db_url.inner(),
+                &icao_code.to_uppercase(),
+            ) {
+                Ok(runways) => runways,
+                Err(error) => {
+                    return match error {
+                        FlygDatabaseError::FailedToQueryDatabase => {
+                            Err(Status::InternalServerError)
+                        }
+                        FlygDatabaseError::MoreThanOneResult => Err(Status::InternalServerError),
+                        FlygDatabaseError::NoResults => Err(Status::NotFound),
+                    }
+                }
+            };
+
+            // all information where available and we can format the information, ...
+            let runways = raw_runway_information
+                .iter()
+                .map(|input_element| RunwayInformation {
+                    length: input_element.runway_length as u16,
+                    width: input_element.runway_width as u8,
+                    primary_direction: input_element.primary_direction as u16,
+                    secondary_direction: input_element.secondary_direction as u16,
+                })
+                .collect();
+
+            // ... and return them to the requesting party
+            return Ok(Json(AirportInformation {
+                icao_code: airport_infos.icao_code,
+                country_code: airport_infos.country,
+                name: airport_infos.name,
+                position: Coordinates {
+                    latitude: airport_infos.latitude,
+                    longitude: airport_infos.longitude,
+                },
+                runways,
+            }));
+        }
         Err(error) => match error {
             FlygDatabaseError::FailedToQueryDatabase => Err(Status::InternalServerError),
             FlygDatabaseError::MoreThanOneResult => Err(Status::InternalServerError),

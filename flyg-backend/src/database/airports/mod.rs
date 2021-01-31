@@ -1,4 +1,4 @@
-use super::schema::airports;
+use super::schema::{airports, runways};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::PgConnection;
@@ -14,6 +14,18 @@ pub struct Airport {
     pub longitude: f32,
     pub latitude: f32,
     pub name: String,
+}
+
+#[derive(Clone, Queryable, Identifiable)]
+#[primary_key(id)]
+#[table_name = "runways"]
+pub struct Runway {
+    pub id: i32,
+    pub primary_direction: i32,
+    pub secondary_direction: i32,
+    pub primary_denominator: Option<String>,
+    pub runway_length: i32,
+    pub runway_width: i32,
 }
 
 pub enum FlygDatabaseError {
@@ -64,5 +76,29 @@ pub fn get_information_for_icao_code(
     }
 
     // it seems that we completely failed to query the database for the requested information
+    Err(FlygDatabaseError::FailedToQueryDatabase)
+}
+
+/// Query the database for the runway information for a specific airport.
+///
+/// This method can be used to query the database for all information
+/// regarding the runways of a specific airport by its assigned ICAO code.
+///
+/// # Arguments
+/// * `db_url` - The URL use to connect to the database server.
+/// * `icao_code_to_query_for` - The four letter ICAO code to query for.
+///
+/// # Errors
+/// Will return `Err` if the requested runway information could not be found. The result
+/// might be one of the following:
+/// * `NoResults` - Could not find the airport with the given ICAO code.
+/// * `MoreThanOneResult` - Got more than one airport which should not happen since the ICAO code is unique.
+/// * `FailedToQueryDatabase` - Completely failed to query the database for the requested information.
+pub fn get_runway_information_for_icao_code(
+    db_url: &String,
+    icao_code_to_query_for: &String,
+) -> Result<Vec<Runway>, FlygDatabaseError> {
+    // TODO: see https://docs.diesel.rs/diesel/associations/index.html
+    // TODO: see https://github.com/diesel-rs/diesel/issues/1129
     Err(FlygDatabaseError::FailedToQueryDatabase)
 }
