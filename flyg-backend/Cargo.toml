@@ -6,14 +6,21 @@ edition = "2018"
 
 [dependencies.diesel]
 version = "1.4"
-features = ["postgres"]
+features = ["postgres", "chrono"]
 
 [dependencies.rocket]
 version = "0.4"
+
+[dependencies.rocket_contrib]
+version = "0.4"
+
+[dependencies.chrono]
+version = "0.4"
+
+[dependencies.dotenv]
+version = "0.15"
 
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]
 
-[dependencies.rocket_contrib]
-version = "0.4"

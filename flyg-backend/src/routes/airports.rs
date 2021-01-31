@@ -1,5 +1,6 @@
+use crate::database::airports::{get_information_for_icao_code, FlygDatabaseError};
 use rocket::http::Status;
-use rocket::{get, post};
+use rocket::{get, post, State};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 
@@ -47,25 +48,35 @@ pub struct AirportInformation {
 ///
 /// Return information about a requested airport. The airport **must** be specified by using
 /// its four-letter ICAO code.
-#[get("/airport/<icao_code>")]
-pub fn get_airport_information(icao_code: String) -> Result<Json<AirportInformation>, Status> {
+#[get("/airports/<icao_code>")]
+pub fn get_airport_information(
+    db_url: State<String>,
+    icao_code: String,
+) -> Result<Json<AirportInformation>, Status> {
     // an ICAO code is always for letters/digits long, everything else seems to be an
     // invalid request
     if icao_code.len() != 4 {
         return Err(Status::BadRequest);
     }
 
-    //
-    Ok(Json(AirportInformation {
-        icao_code,
-        country_code: "DE".to_owned(),
-        name: "Foo".to_owned(),
-        position: Coordinates {
-            latitude: 0.0,
-            longitude: 0.0,
+    // try to query the information about the requested airport and return them
+    return match get_information_for_icao_code(db_url.inner(), &icao_code.to_uppercase()) {
+        Ok(airport_infos) => Ok(Json(AirportInformation {
+            icao_code: airport_infos.icao_code,
+            country_code: airport_infos.country,
+            name: airport_infos.name,
+            position: Coordinates {
+                latitude: airport_infos.latitude,
+                longitude: airport_infos.longitude,
+            },
+            runways: vec![],
+        })),
+        Err(error) => match error {
+            FlygDatabaseError::FailedToQueryDatabase => Err(Status::InternalServerError),
+            FlygDatabaseError::MoreThanOneResult => Err(Status::InternalServerError),
+            FlygDatabaseError::NoResults => Err(Status::NotFound),
         },
-        runways: vec![],
-    }))
+    };
 }
 
 /// # Add a new airport to the database

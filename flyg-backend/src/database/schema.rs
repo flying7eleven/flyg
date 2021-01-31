@@ -32,8 +32,4 @@ table! {
 joinable!(runway_airport_associations -> airports (airport_id));
 joinable!(runway_airport_associations -> runways (runway_id));
 
-allow_tables_to_appear_in_same_query!(
-    airports,
-    runway_airport_associations,
-    runways,
-);
+allow_tables_to_appear_in_same_query!(airports, runway_airport_associations, runways,);
