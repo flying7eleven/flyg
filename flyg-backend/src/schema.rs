@@ -2,6 +2,7 @@ table! {
     airports (id) {
         id -> Int4,
         icao_code -> Varchar,
+        last_update -> Timestamp,
         country -> Varchar,
         longitude -> Float4,
         latitude -> Float4,
@@ -20,8 +21,9 @@ table! {
 table! {
     runways (id) {
         id -> Int4,
-        direction_one -> Int4,
-        direction_two -> Int4,
+        primary_direction -> Int4,
+        secondary_direction -> Int4,
+        primary_denominator -> Nullable<Varchar>,
         runway_length -> Int4,
         runway_width -> Int4,
     }
