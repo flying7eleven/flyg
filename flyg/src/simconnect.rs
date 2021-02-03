@@ -380,7 +380,7 @@ impl SimConnect {
                                 let vector_to_cstring =
                                     CString::from_vec_unchecked(atc_infos.tailnumber.to_vec());
                                 match vector_to_cstring.to_str() {
-                                    Ok(as_str) => as_str.to_string(),
+                                    Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
                                     Err(error) => {
                                         error!("Could not convert the ATC ID to a valid string. The error was: {}", error.to_string());
                                         "<???>".to_string()
@@ -391,7 +391,7 @@ impl SimConnect {
                                 let vector_to_cstring =
                                     CString::from_vec_unchecked(atc_infos.flight_number.to_vec());
                                 match vector_to_cstring.to_str() {
-                                    Ok(as_str) => as_str.to_string(),
+                                    Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
                                     Err(error) => {
                                         error!("Could not convert the ATC FLIGHT NUMBER to a valid string. The error was: {}", error.to_string());
                                         "<???>".to_string()
@@ -402,7 +402,7 @@ impl SimConnect {
                                 let vector_to_cstring =
                                     CString::from_vec_unchecked(atc_infos.callsign.to_vec());
                                 match vector_to_cstring.to_str() {
-                                    Ok(as_str) => as_str.to_string(),
+                                    Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
                                     Err(error) => {
                                         error!("Could not convert the ATC AIRLINE to a valid string. The error was: {}", error.to_string());
                                         "<???>".to_string()
