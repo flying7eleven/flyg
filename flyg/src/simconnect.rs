@@ -152,7 +152,7 @@ impl SimConnect {
                 Request::AircraftAtcIdRequest as u32,
                 ClientDataDefinition::AircraftAtcId as u32,
                 bindings::SIMCONNECT_OBJECT_ID_USER,
-                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_VISUAL_FRAME,
+                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_SECOND,
                 bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
                 0,
                 0,
