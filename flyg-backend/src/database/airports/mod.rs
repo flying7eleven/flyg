@@ -1,9 +1,9 @@
-use super::schema::{airports, runways};
+use super::schema::{airports, runway_airport_associations, runways};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::PgConnection;
 
-#[derive(Clone, Queryable, Identifiable)]
+#[derive(Clone, Queryable, Identifiable, Associations)]
 #[primary_key(id)]
 #[table_name = "airports"]
 pub struct Airport {
@@ -16,16 +16,27 @@ pub struct Airport {
     pub name: String,
 }
 
-#[derive(Clone, Queryable, Identifiable)]
+#[derive(Clone, Queryable, Identifiable, Associations)]
 #[primary_key(id)]
 #[table_name = "runways"]
 pub struct Runway {
     pub id: i32,
     pub primary_direction: i32,
     pub secondary_direction: i32,
-    pub primary_denominator: Option<String>,
+    pub primary_suffix: Option<String>,
     pub runway_length: i32,
     pub runway_width: i32,
+}
+
+#[derive(Clone, Queryable, Identifiable, Associations)]
+#[primary_key(id)]
+#[table_name = "runway_airport_associations"]
+#[belongs_to(Airport)]
+#[belongs_to(Runway)]
+pub struct RunwayAirportAssociations {
+    pub id: i32,
+    pub airport_id: i32,
+    pub runway_id: i32,
 }
 
 pub enum FlygDatabaseError {
@@ -98,7 +109,26 @@ pub fn get_runway_information_for_icao_code(
     db_url: &String,
     icao_code_to_query_for: &String,
 ) -> Result<Vec<Runway>, FlygDatabaseError> {
-    // TODO: see https://docs.diesel.rs/diesel/associations/index.html
-    // TODO: see https://github.com/diesel-rs/diesel/issues/1129
+    use super::schema::runway_airport_associations::dsl::runway_id;
+    use super::schema::runways::dsl::{id, runways};
+    use diesel::pg::expression::dsl::any;
+
+    match get_information_for_icao_code(db_url, icao_code_to_query_for) {
+        Ok(airport_infos) => {
+            if let Ok(database_connection) = PgConnection::establish(&db_url) {
+                let found_runway_ids =
+                    RunwayAirportAssociations::belonging_to(&airport_infos).select(runway_id);
+                if let Ok(found_runways) = runways
+                    .filter(id.eq(any(found_runway_ids)))
+                    .load::<Runway>(&database_connection)
+                {
+                    return Ok(found_runways);
+                }
+            }
+        }
+        Err(error) => return Err(error),
+    }
+
+    // it seems that we completely failed to query the database for the requested information
     Err(FlygDatabaseError::FailedToQueryDatabase)
 }

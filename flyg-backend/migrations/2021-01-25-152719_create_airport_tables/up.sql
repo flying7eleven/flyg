@@ -14,7 +14,7 @@ CREATE TABLE runways
     id                  SERIAL PRIMARY KEY,
     primary_direction   INTEGER NOT NULL,     -- in degree (magnetic north)
     secondary_direction INTEGER NOT NULL,     -- in degree (magnetic north)
-    primary_denominator VARCHAR DEFAULT NULL, -- e.g. L, R, C, etc... (if there are multiple parallel runways)
+    primary_suffix      VARCHAR DEFAULT NULL, -- e.g. L, R, C, etc... (if there are multiple parallel runways)
     runway_length       INTEGER NOT NULL,     -- in meter
     runway_width        INTEGER NOT NULL      -- in meter
 );

@@ -28,6 +28,9 @@ pub struct RunwayInformation {
     primary_direction: u16,
     /// The second direction of the runway in degree (magnetic north, e.g. 7).
     secondary_direction: u16,
+    /// The suffix of the primary direction of the runway (if applicable, e.g. L, R, C, etc.).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    primary_suffix: Option<String>,
 }
 
 /// Information about a specific airport.
@@ -90,6 +93,7 @@ pub fn get_airport_information(
                     width: input_element.runway_width as u8,
                     primary_direction: input_element.primary_direction as u16,
                     secondary_direction: input_element.secondary_direction as u16,
+                    primary_suffix: input_element.primary_suffix.clone(),
                 })
                 .collect();
 

@@ -23,7 +23,7 @@ table! {
         id -> Int4,
         primary_direction -> Int4,
         secondary_direction -> Int4,
-        primary_denominator -> Nullable<Varchar>,
+        primary_suffix -> Nullable<Varchar>,
         runway_length -> Int4,
         runway_width -> Int4,
     }
