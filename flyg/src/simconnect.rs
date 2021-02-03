@@ -2,7 +2,7 @@ use crate::bindings;
 use num_enum::TryFromPrimitive;
 use std::convert::TryFrom;
 use std::ffi::{c_void, CString};
-use std::ptr::null_mut;
+use std::ptr::{null, null_mut};
 use std::time::Duration;
 
 macro_rules! as_c_string {
@@ -21,18 +21,21 @@ pub enum Notification {
     Connected,
     Disconnected,
     Position(PositionInformation),
+    AircraftAtcId(AircraftAtcInformation),
 }
 
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 enum Request {
     AircraftPositionRequest,
+    AircraftAtcIdRequest,
 }
 
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 enum ClientDataDefinition {
     AircraftPositionInformation,
+    AircraftAtcId,
 }
 
 #[derive(Copy, Clone)]
@@ -40,6 +43,11 @@ pub struct PositionInformation {
     pub latitude: f64,
     pub longitude: f64,
     pub altitude: f64,
+}
+
+#[derive(Clone)]
+pub struct AircraftAtcInformation {
+    pub atc_id: String,
 }
 
 pub struct SimConnect {
@@ -79,6 +87,48 @@ impl SimConnect {
 
         // store the connection handle
         self.handle = handle;
+        Ok(())
+    }
+
+    pub fn request_atc_id_updates(&self) -> Result<(), i32> {
+        use log::error;
+
+        let add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle,
+                ClientDataDefinition::AircraftAtcId as u32,
+                as_c_string!("ATC ID"),
+                null(),
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        let request_data_on_sim_object_result = unsafe {
+            bindings::SimConnect_RequestDataOnSimObject(
+                self.handle,
+                Request::AircraftAtcIdRequest as u32,
+                ClientDataDefinition::AircraftAtcId as u32,
+                bindings::SIMCONNECT_OBJECT_ID_USER,
+                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_VISUAL_FRAME,
+                bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
+                0,
+                0,
+                0,
+            )
+        };
+
+        if 0x0 != request_data_on_sim_object_result {
+            error!("FAIL!");
+            return Err(request_data_on_sim_object_result);
+        }
+
         Ok(())
     }
 
@@ -192,7 +242,7 @@ impl SimConnect {
         }
     }
 
-    pub fn get_next_notification(&self) -> Option<Notification> {
+    pub fn get_next_notification(&mut self) -> Option<Notification> {
         use log::{error, trace, warn};
         use std::mem::transmute_copy;
 
@@ -238,6 +288,7 @@ impl SimConnect {
 
             // simple event that the connection to the simulator was closed
             bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_QUIT => {
+                self.handle = null_mut::<c_void>();
                 Some(Notification::Disconnected)
             }
 
@@ -275,6 +326,31 @@ impl SimConnect {
                         let position_data: &PositionInformation =
                             unsafe { transmute_copy(&&object_data.dwData) };
                         Some(Notification::Position(position_data.clone()))
+                    }
+
+                    // we received this request response for the ATC ID (Tail number) for the plane. This can be caused
+                    // due to a reload of the plane, a change by the user or any other tool or simply by the startup of
+                    // the scenario
+                    Ok(Request::AircraftAtcIdRequest) => {
+                        struct TemporaryDataRepresentation {
+                            atc_id: [u8; 64],
+                        }
+                        let atc_infos: &TemporaryDataRepresentation =
+                            unsafe { transmute_copy(&&object_data.dwData) };
+                        let atc_info = AircraftAtcInformation {
+                            atc_id: unsafe {
+                                let vector_to_cstring =
+                                    CString::from_vec_unchecked(atc_infos.atc_id.to_vec());
+                                match vector_to_cstring.to_str() {
+                                    Ok(as_str) => as_str.to_string(),
+                                    Err(error) => {
+                                        error!("Could not convert the ATC ID to a valid string. The error was: {}", error.to_string());
+                                        "<???>".to_string()
+                                    }
+                                }
+                            },
+                        };
+                        Some(Notification::AircraftAtcId(atc_info))
                     }
 
                     // we received the answer to a request we are currently not handling. Log a warning since this
