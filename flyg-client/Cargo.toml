@@ -19,3 +19,6 @@ version = "0.6"
 
 [dependencies.log]
 version = "0.4"
+
+[dependencies.dialoguer]
+version = "0.7"
