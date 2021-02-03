@@ -46,18 +46,29 @@ fn main() {
         .request_atc_id_updates()
         .expect("No ATC ID update!");
 
+    // request updates for the title of the plane
+    simulator_connection
+        .request_plane_title_updates()
+        .expect("No plane title update!");
+
     // process the messages we receive from the simulator
     loop {
         match simulator_connection.get_next_notification() {
             Some(Notification::Connected) => info!("Connection opened!"),
             Some(Notification::Disconnected) => info!("Connection closed!"),
             Some(Notification::Position(position)) => {
-                info!("Position update. Altitude: {:.0}ft", position.altitude)
+                info!(
+                    "Position update. Altitude: {:.0}ft (lat. {}, long. {})",
+                    position.altitude, position.latitude, position.longitude
+                );
             }
             Some(Notification::AircraftAtcId(atc_infos)) => {
                 info!("ATC ID update. Tail number: {}", atc_infos.tail_number);
                 info!("ATC ID update. Callsign: {}", atc_infos.callsign);
                 info!("ATC ID update. Flight number: {}", atc_infos.flight_number);
+            }
+            Some(Notification::AircraftTitle(title)) => {
+                info!("Aircraft title update. Title: {}", title);
             }
             None => {}
         }

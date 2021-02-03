@@ -22,6 +22,7 @@ pub enum Notification {
     Disconnected,
     Position(PositionInformation),
     AircraftAtcId(AircraftAtcInformation),
+    AircraftTitle(String),
 }
 
 #[repr(u32)]
@@ -29,6 +30,7 @@ pub enum Notification {
 enum Request {
     AircraftPositionRequest,
     AircraftAtcIdRequest,
+    AircraftTitleRequest,
 }
 
 #[repr(u32)]
@@ -36,6 +38,7 @@ enum Request {
 enum ClientDataDefinition {
     AircraftPositionInformation,
     AircraftAtcId,
+    AircraftTitle,
 }
 
 #[derive(Copy, Clone)]
@@ -89,6 +92,48 @@ impl SimConnect {
 
         // store the connection handle
         self.handle = handle;
+        Ok(())
+    }
+
+    pub fn request_plane_title_updates(&self) -> Result<(), i32> {
+        use log::error;
+
+        let add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle,
+                ClientDataDefinition::AircraftTitle as u32,
+                as_c_string!("title"),
+                null(),
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING260,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        let request_data_on_sim_object_result = unsafe {
+            bindings::SimConnect_RequestDataOnSimObject(
+                self.handle,
+                Request::AircraftTitleRequest as u32,
+                ClientDataDefinition::AircraftTitle as u32,
+                bindings::SIMCONNECT_OBJECT_ID_USER,
+                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_SECOND,
+                bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
+                0,
+                0,
+                0,
+            )
+        };
+
+        if 0x0 != request_data_on_sim_object_result {
+            error!("FAIL!");
+            return Err(request_data_on_sim_object_result);
+        }
+
         Ok(())
     }
 
@@ -411,6 +456,28 @@ impl SimConnect {
                             },
                         };
                         Some(Notification::AircraftAtcId(atc_info))
+                    }
+
+                    // TODO
+                    Ok(Request::AircraftTitleRequest) => {
+                        struct TemporaryDataRepresentation {
+                            title: [u8; 260],
+                        }
+                        let aircraft_title: &TemporaryDataRepresentation =
+                            unsafe { transmute_copy(&&object_data.dwData) };
+                        let aicraft_title_as_string = unsafe {
+                            let vector_to_cstring =
+                                CString::from_vec_unchecked(aircraft_title.title.to_vec());
+                            match vector_to_cstring.to_str() {
+                                Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
+                                Err(error) => {
+                                    error!("Could not convert the title of the aircraft to a valid string. The error was: {}", error.to_string());
+                                    "<???>".to_string()
+                                }
+                            }
+                        };
+
+                        Some(Notification::AircraftTitle(aicraft_title_as_string))
                     }
 
                     // we received the answer to a request we are currently not handling. Log a warning since this
