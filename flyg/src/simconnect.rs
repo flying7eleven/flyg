@@ -47,7 +47,9 @@ pub struct PositionInformation {
 
 #[derive(Clone)]
 pub struct AircraftAtcInformation {
-    pub atc_id: String,
+    pub tailnumber: String,
+    pub callsign: String,
+    pub flight_number: String,
 }
 
 pub struct SimConnect {
@@ -98,6 +100,40 @@ impl SimConnect {
                 self.handle,
                 ClientDataDefinition::AircraftAtcId as u32,
                 as_c_string!("ATC ID"),
+                null(),
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        let add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle,
+                ClientDataDefinition::AircraftAtcId as u32,
+                as_c_string!("ATC AIRLINE"),
+                null(),
+                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
+                0.0,
+                bindings::SIMCONNECT_UNUSED,
+            )
+        };
+
+        if 0x0 != add_to_data_definition_result {
+            error!("FAIL!");
+            return Err(add_to_data_definition_result);
+        }
+
+        let add_to_data_definition_result = unsafe {
+            bindings::SimConnect_AddToDataDefinition(
+                self.handle,
+                ClientDataDefinition::AircraftAtcId as u32,
+                as_c_string!("ATC FLIGHT NUMBER"),
                 null(),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
                 0.0,
@@ -333,18 +369,42 @@ impl SimConnect {
                     // the scenario
                     Ok(Request::AircraftAtcIdRequest) => {
                         struct TemporaryDataRepresentation {
-                            atc_id: [u8; 64],
+                            tailnumber: [u8; 64],
+                            callsign: [u8; 64],
+                            flight_number: [u8; 64],
                         }
                         let atc_infos: &TemporaryDataRepresentation =
                             unsafe { transmute_copy(&&object_data.dwData) };
                         let atc_info = AircraftAtcInformation {
-                            atc_id: unsafe {
+                            tailnumber: unsafe {
                                 let vector_to_cstring =
-                                    CString::from_vec_unchecked(atc_infos.atc_id.to_vec());
+                                    CString::from_vec_unchecked(atc_infos.tailnumber.to_vec());
                                 match vector_to_cstring.to_str() {
                                     Ok(as_str) => as_str.to_string(),
                                     Err(error) => {
                                         error!("Could not convert the ATC ID to a valid string. The error was: {}", error.to_string());
+                                        "<???>".to_string()
+                                    }
+                                }
+                            },
+                            flight_number: unsafe {
+                                let vector_to_cstring =
+                                    CString::from_vec_unchecked(atc_infos.flight_number.to_vec());
+                                match vector_to_cstring.to_str() {
+                                    Ok(as_str) => as_str.to_string(),
+                                    Err(error) => {
+                                        error!("Could not convert the ATC FLIGHT NUMBER to a valid string. The error was: {}", error.to_string());
+                                        "<???>".to_string()
+                                    }
+                                }
+                            },
+                            callsign: unsafe {
+                                let vector_to_cstring =
+                                    CString::from_vec_unchecked(atc_infos.callsign.to_vec());
+                                match vector_to_cstring.to_str() {
+                                    Ok(as_str) => as_str.to_string(),
+                                    Err(error) => {
+                                        error!("Could not convert the ATC AIRLINE to a valid string. The error was: {}", error.to_string());
                                         "<???>".to_string()
                                     }
                                 }

@@ -55,7 +55,12 @@ fn main() {
                 info!("Position update. Altitude: {:.0}ft", position.altitude)
             }
             Some(Notification::AircraftAtcId(atc_infos)) => {
-                info!("ATC ID update. New tail number {}", atc_infos.atc_id);
+                info!("ATC ID update. Tail number: {:?}", atc_infos.tailnumber);
+                info!("ATC ID update. Callsign: {:?}", atc_infos.callsign);
+                info!(
+                    "ATC ID update. Flight number: {:?}",
+                    atc_infos.flight_number
+                );
             }
             None => {}
         }
