@@ -47,7 +47,7 @@ pub struct PositionInformation {
 
 #[derive(Clone)]
 pub struct AircraftAtcInformation {
-    pub tailnumber: String,
+    pub tail_number: String,
     pub callsign: String,
     pub flight_number: String,
 }
@@ -376,7 +376,7 @@ impl SimConnect {
                         let atc_infos: &TemporaryDataRepresentation =
                             unsafe { transmute_copy(&&object_data.dwData) };
                         let atc_info = AircraftAtcInformation {
-                            tailnumber: unsafe {
+                            tail_number: unsafe {
                                 let vector_to_cstring =
                                     CString::from_vec_unchecked(atc_infos.tailnumber.to_vec());
                                 match vector_to_cstring.to_str() {
