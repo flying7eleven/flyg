@@ -2,6 +2,7 @@ use crate::bindings;
 use num_enum::TryFromPrimitive;
 use std::convert::TryFrom;
 use std::ffi::{c_void, CString};
+use std::ptr::null_mut;
 use std::time::Duration;
 
 macro_rules! as_c_string {
@@ -42,11 +43,17 @@ pub struct PositionInformation {
 }
 
 pub struct SimConnect {
-    handle: std::ptr::NonNull<c_void>,
+    handle: *mut c_void,
 }
 
 impl SimConnect {
-    pub fn new() -> Result<Self, String> {
+    pub fn new() -> Self {
+        SimConnect {
+            handle: null_mut::<c_void>(),
+        }
+    }
+
+    pub fn connect(&mut self) -> Result<(), String> {
         let mut handle = std::ptr::null_mut();
 
         // try to connect to the local SimConnect server (e.g. the simulator)
@@ -70,18 +77,9 @@ impl SimConnect {
             ));
         }
 
-        // try to create a NonNull instance from the returned connection handle
-        let simconnect_handle = match std::ptr::NonNull::new(handle) {
-            Some(real_handle) => real_handle,
-            None => {
-                return Err("The returned SimConnect handle was NULL which is not okay according to the API specifications".to_string());
-            }
-        };
-
-        // return the new SimConnect instance
-        Ok(SimConnect {
-            handle: simconnect_handle,
-        })
+        // store the connection handle
+        self.handle = handle;
+        Ok(())
     }
 
     pub fn request_position_updates(&self) -> Result<(), i32> {
@@ -89,7 +87,7 @@ impl SimConnect {
 
         let mut add_to_data_definition_result = unsafe {
             bindings::SimConnect_AddToDataDefinition(
-                self.handle.as_ptr(),
+                self.handle,
                 ClientDataDefinition::AircraftPositionInformation as u32,
                 as_c_string!("PLANE LATITUDE"),
                 as_c_string!("Degrees"),
@@ -106,7 +104,7 @@ impl SimConnect {
 
         add_to_data_definition_result = unsafe {
             bindings::SimConnect_AddToDataDefinition(
-                self.handle.as_ptr(),
+                self.handle,
                 ClientDataDefinition::AircraftPositionInformation as u32,
                 as_c_string!("PLANE LONGITUDE"),
                 as_c_string!("Degrees"),
@@ -123,7 +121,7 @@ impl SimConnect {
 
         add_to_data_definition_result = unsafe {
             bindings::SimConnect_AddToDataDefinition(
-                self.handle.as_ptr(),
+                self.handle,
                 ClientDataDefinition::AircraftPositionInformation as u32,
                 as_c_string!("PLANE ALTITUDE"),
                 as_c_string!("Feet"),
@@ -140,7 +138,7 @@ impl SimConnect {
 
         let request_data_on_sim_object_result = unsafe {
             bindings::SimConnect_RequestDataOnSimObject(
-                self.handle.as_ptr(),
+                self.handle,
                 Request::AircraftPositionRequest as u32,
                 ClientDataDefinition::AircraftPositionInformation as u32,
                 bindings::SIMCONNECT_OBJECT_ID_USER,
@@ -175,7 +173,7 @@ impl SimConnect {
         // send the text to the SimConnect interface to be displayed to the user
         let sim_connect_text_result = unsafe {
             bindings::SimConnect_Text(
-                self.handle.as_ptr(),
+                self.handle,
                 bindings::SIMCONNECT_TEXT_TYPE_SIMCONNECT_TEXT_TYPE_PRINT_WHITE,
                 duration.as_secs() as f32,
                 Event::UserTextDisplay as u32,
@@ -203,9 +201,8 @@ impl SimConnect {
         let mut cb_data: bindings::DWORD = 0;
 
         // query the simulator for the next event we want to process
-        let get_next_dispatch_result = unsafe {
-            bindings::SimConnect_GetNextDispatch(self.handle.as_ptr(), &mut data, &mut cb_data)
-        };
+        let get_next_dispatch_result =
+            unsafe { bindings::SimConnect_GetNextDispatch(self.handle, &mut data, &mut cb_data) };
 
         // check if we succeeded (S_OK [0x0]). If not, handle the error appropriately
         if 0x0 != get_next_dispatch_result {
@@ -316,6 +313,6 @@ impl SimConnect {
 
 impl Drop for SimConnect {
     fn drop(&mut self) {
-        let _ = unsafe { bindings::SimConnect_Close(self.handle.as_ptr()) };
+        let _ = unsafe { bindings::SimConnect_Close(self.handle) };
     }
 }

@@ -28,8 +28,9 @@ fn main() {
 
     initialize_logging();
 
-    let simulator_connection = match SimConnect::new() {
-        Ok(connection) => connection,
+    let mut simulator_connection = SimConnect::new();
+    match simulator_connection.connect() {
+        Ok(_) => {}
         Err(error_message) => panic!("Could not connect to the simulator: {}", error_message),
     };
 
