@@ -109,24 +109,44 @@ pub fn get_runway_information_for_icao_code(
     db_url: &String,
     icao_code_to_query_for: &String,
 ) -> Result<Vec<Runway>, FlygDatabaseError> {
+    return match get_information_for_icao_code(db_url, icao_code_to_query_for) {
+        Ok(airport_infos) => get_runway_information_for_airport(db_url, &airport_infos),
+        Err(error) => Err(error),
+    };
+}
+
+/// Query the database for the runway information for a specific airport.
+///
+/// This method can be used to query the database for all information
+/// regarding the runways of a specific airport by its database entity.
+///
+/// # Arguments
+/// * `db_url` - The URL use to connect to the database server.
+/// * `airport_to_query_for` - The database entity to use for querying the runway information.
+///
+/// # Errors
+/// Will return `Err` if the requested runway information could not be found. The result
+/// might be one of the following:
+/// * `NoResults` - Could not find the airport with the given ICAO code.
+/// * `MoreThanOneResult` - Got more than one airport which should not happen since the ICAO code is unique.
+/// * `FailedToQueryDatabase` - Completely failed to query the database for the requested information.
+pub fn get_runway_information_for_airport(
+    db_url: &String,
+    airport_to_query_for: &Airport,
+) -> Result<Vec<Runway>, FlygDatabaseError> {
     use super::schema::runway_airport_associations::dsl::runway_id;
     use super::schema::runways::dsl::{id, runways};
     use diesel::pg::expression::dsl::any;
 
-    match get_information_for_icao_code(db_url, icao_code_to_query_for) {
-        Ok(airport_infos) => {
-            if let Ok(database_connection) = PgConnection::establish(&db_url) {
-                let found_runway_ids =
-                    RunwayAirportAssociations::belonging_to(&airport_infos).select(runway_id);
-                if let Ok(found_runways) = runways
-                    .filter(id.eq(any(found_runway_ids)))
-                    .load::<Runway>(&database_connection)
-                {
-                    return Ok(found_runways);
-                }
-            }
+    if let Ok(database_connection) = PgConnection::establish(&db_url) {
+        let found_runway_ids =
+            RunwayAirportAssociations::belonging_to(airport_to_query_for).select(runway_id);
+        if let Ok(found_runways) = runways
+            .filter(id.eq(any(found_runway_ids)))
+            .load::<Runway>(&database_connection)
+        {
+            return Ok(found_runways);
         }
-        Err(error) => return Err(error),
     }
 
     // it seems that we completely failed to query the database for the requested information
