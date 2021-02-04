@@ -980,6 +980,8 @@ dependencies = [
  "chrono",
  "diesel",
  "dotenv",
+ "fern",
+ "log 0.4.11",
  "rocket",
  "rocket_contrib",
  "serde",
