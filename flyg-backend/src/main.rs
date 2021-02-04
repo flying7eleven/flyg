@@ -27,7 +27,10 @@ fn main() {
         .attach(FlygDatabaseConnection::fairing())
         .mount(
             "/v1",
-            routes![flyg_backend::routes::airports::get_airport_information],
+            routes![
+                flyg_backend::routes::airports::get_airport_information,
+                flyg_backend::routes::airports::get_closest_airport_to_position
+            ],
         )
         .launch();
 }

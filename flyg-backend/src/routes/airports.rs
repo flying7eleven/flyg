@@ -1,8 +1,9 @@
 use crate::database::airports::{
-    get_information_for_icao_code, get_runway_information_for_icao_code, FlygDatabaseError,
+    get_closest_airport_for_coordinates, get_information_for_icao_code,
+    get_runway_information_for_icao_code, FlygDatabaseError,
 };
 use crate::FlygDatabaseConnection;
-use rocket::http::Status;
+use rocket::http::{RawStr, Status};
 use rocket::{get, post};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
@@ -48,6 +49,73 @@ pub struct AirportInformation {
     position: Coordinates,
     /// A list of all runways of the airport.
     runways: Vec<RunwayInformation>,
+}
+
+/// TODO
+///
+/// # Arguments
+/// * `database_connection` - TODO
+/// * `latitude` - TODO
+/// * `longitude` - TODO
+///
+/// # Errors
+/// Will return `Err` if the requested runway information could not be found. The result
+/// might be one of the following:
+/// * `NoResults` - Could not find the airport with the given ICAO code.
+/// * `MoreThanOneResult` - Got more than one airport which should not happen since the ICAO code is unique.
+/// * `FailedToQueryDatabase` - Completely failed to query the database for the requested information.
+#[get("/airports/closest?<latitude>&<longitude>")]
+pub fn get_closest_airport_to_position(
+    database_connection: FlygDatabaseConnection,
+    latitude: &RawStr,
+    longitude: &RawStr,
+) -> Result<Json<()>, Status> {
+    use log::error;
+
+    // convert the latitude to a float value
+    let latitude_as_float = match latitude.parse::<f32>() {
+        Ok(value) => value,
+        Err(error) => {
+            error!(
+                "Failed to convert the passed latitude ({}) to a float. The error was: {}",
+                latitude, error
+            );
+            return Err(Status::BadRequest);
+        }
+    };
+
+    // convert the longitude to a float value
+    let longitude_as_float = match longitude.parse::<f32>() {
+        Ok(value) => value,
+        Err(error) => {
+            error!(
+                "Failed to convert the passed longitude ({}) to a float. The error was: {}",
+                longitude, error
+            );
+            return Err(Status::BadRequest);
+        }
+    };
+
+    // ensure the latitude and the longitude are in the correct range
+    if latitude_as_float < -90.0
+        || latitude_as_float > 90.0
+        || longitude_as_float < -180.0
+        || longitude_as_float > 180.0
+    {
+        error!(
+            "The latitude ({}) and/or longitude ({}) are out of a valid range",
+            latitude_as_float, longitude_as_float
+        );
+        return Err(Status::BadRequest);
+    }
+
+    get_closest_airport_for_coordinates(
+        &*database_connection,
+        latitude_as_float,
+        longitude_as_float,
+    );
+
+    Ok(Json(()))
 }
 
 /// # Get information about a specific airport
