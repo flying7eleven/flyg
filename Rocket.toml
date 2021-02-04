@@ -5,6 +5,9 @@ keep_alive = 5
 read_timeout = 5
 write_timeout = 5
 
+[global.databases]
+flyg_database = { url = "postgres://debuguser:debugpassword@localhost/flyg" }
+
 [development]
 address = "localhost"
 workers = 1

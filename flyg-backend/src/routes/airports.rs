@@ -1,8 +1,9 @@
 use crate::database::airports::{
     get_information_for_icao_code, get_runway_information_for_icao_code, FlygDatabaseError,
 };
+use crate::FlygDatabaseConnection;
 use rocket::http::Status;
-use rocket::{get, post, State};
+use rocket::{get, post};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 
@@ -55,7 +56,7 @@ pub struct AirportInformation {
 /// its four-letter ICAO code.
 #[get("/airports/<icao_code>")]
 pub fn get_airport_information(
-    db_url: State<String>,
+    database_connection: FlygDatabaseConnection,
     icao_code: String,
 ) -> Result<Json<AirportInformation>, Status> {
     // an ICAO code is always for letters/digits long, everything else seems to be an
@@ -65,12 +66,12 @@ pub fn get_airport_information(
     }
 
     // try to query the information about the requested airport and return them
-    return match get_information_for_icao_code(db_url.inner(), &icao_code.to_uppercase()) {
+    return match get_information_for_icao_code(&*database_connection, &icao_code.to_uppercase()) {
         Ok(airport_infos) => {
             // since the airport was found, we now can query the airports which are associated
             // to it
             let raw_runway_information = match get_runway_information_for_icao_code(
-                db_url.inner(),
+                &*database_connection,
                 &icao_code.to_uppercase(),
             ) {
                 Ok(runways) => runways,

@@ -54,7 +54,7 @@ pub enum FlygDatabaseError {
 /// regarding a specific airport by its assigned ICAO code.
 ///
 /// # Arguments
-/// * `db_url` - The URL use to connect to the database server.
+/// * `database_connection` - The connection to the database servers for the query.
 /// * `icao_code_to_query_for` - The four letter ICAO code to query for.
 ///
 /// # Errors
@@ -64,26 +64,24 @@ pub enum FlygDatabaseError {
 /// * `MoreThanOneResult` - Got more than one airport which should not happen since the ICAO code is unique.
 /// * `FailedToQueryDatabase` - Completely failed to query the database for the requested information.
 pub fn get_information_for_icao_code(
-    db_url: &String,
+    database_connection: &PgConnection,
     icao_code_to_query_for: &String,
 ) -> Result<Airport, FlygDatabaseError> {
     use super::schema::airports::dsl::{airports, icao_code};
 
-    if let Ok(database_connection) = PgConnection::establish(&db_url) {
-        if let Ok(found_airports) = airports
-            .filter(icao_code.eq(icao_code_to_query_for))
-            .load::<Airport>(&database_connection)
-        {
-            // return an matching error if we got non or too many results
-            if found_airports.len() == 0 {
-                return Err(FlygDatabaseError::NoResults);
-            } else if found_airports.len() > 1 {
-                return Err(FlygDatabaseError::MoreThanOneResult);
-            }
-
-            // return the information about the airport which where requested
-            return Ok(found_airports[0].clone());
+    if let Ok(found_airports) = airports
+        .filter(icao_code.eq(icao_code_to_query_for))
+        .load::<Airport>(database_connection)
+    {
+        // return an matching error if we got non or too many results
+        if found_airports.len() == 0 {
+            return Err(FlygDatabaseError::NoResults);
+        } else if found_airports.len() > 1 {
+            return Err(FlygDatabaseError::MoreThanOneResult);
         }
+
+        // return the information about the airport which where requested
+        return Ok(found_airports[0].clone());
     }
 
     // it seems that we completely failed to query the database for the requested information
@@ -96,7 +94,7 @@ pub fn get_information_for_icao_code(
 /// regarding the runways of a specific airport by its assigned ICAO code.
 ///
 /// # Arguments
-/// * `db_url` - The URL use to connect to the database server.
+/// * `database_connection` - The connection to the database servers for the query.
 /// * `icao_code_to_query_for` - The four letter ICAO code to query for.
 ///
 /// # Errors
@@ -106,11 +104,13 @@ pub fn get_information_for_icao_code(
 /// * `MoreThanOneResult` - Got more than one airport which should not happen since the ICAO code is unique.
 /// * `FailedToQueryDatabase` - Completely failed to query the database for the requested information.
 pub fn get_runway_information_for_icao_code(
-    db_url: &String,
+    database_connection: &PgConnection,
     icao_code_to_query_for: &String,
 ) -> Result<Vec<Runway>, FlygDatabaseError> {
-    return match get_information_for_icao_code(db_url, icao_code_to_query_for) {
-        Ok(airport_infos) => get_runway_information_for_airport(db_url, &airport_infos),
+    return match get_information_for_icao_code(database_connection, icao_code_to_query_for) {
+        Ok(airport_infos) => {
+            get_runway_information_for_airport(database_connection, &airport_infos)
+        }
         Err(error) => Err(error),
     };
 }
@@ -121,7 +121,7 @@ pub fn get_runway_information_for_icao_code(
 /// regarding the runways of a specific airport by its database entity.
 ///
 /// # Arguments
-/// * `db_url` - The URL use to connect to the database server.
+/// * `database_connection` - The connection to the database servers for the query.
 /// * `airport_to_query_for` - The database entity to use for querying the runway information.
 ///
 /// # Errors
@@ -131,22 +131,20 @@ pub fn get_runway_information_for_icao_code(
 /// * `MoreThanOneResult` - Got more than one airport which should not happen since the ICAO code is unique.
 /// * `FailedToQueryDatabase` - Completely failed to query the database for the requested information.
 pub fn get_runway_information_for_airport(
-    db_url: &String,
+    database_connection: &PgConnection,
     airport_to_query_for: &Airport,
 ) -> Result<Vec<Runway>, FlygDatabaseError> {
     use super::schema::runway_airport_associations::dsl::runway_id;
     use super::schema::runways::dsl::{id, runways};
     use diesel::pg::expression::dsl::any;
 
-    if let Ok(database_connection) = PgConnection::establish(&db_url) {
-        let found_runway_ids =
-            RunwayAirportAssociations::belonging_to(airport_to_query_for).select(runway_id);
-        if let Ok(found_runways) = runways
-            .filter(id.eq(any(found_runway_ids)))
-            .load::<Runway>(&database_connection)
-        {
-            return Ok(found_runways);
-        }
+    let found_runway_ids =
+        RunwayAirportAssociations::belonging_to(airport_to_query_for).select(runway_id);
+    if let Ok(found_runways) = runways
+        .filter(id.eq(any(found_runway_ids)))
+        .load::<Runway>(database_connection)
+    {
+        return Ok(found_runways);
     }
 
     // it seems that we completely failed to query the database for the requested information
