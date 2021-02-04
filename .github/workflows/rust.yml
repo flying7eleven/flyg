@@ -3,6 +3,7 @@ name: Rust
 on:
   push:
     branches: [ main ]
+
   pull_request:
     branches: [ main ]
 
@@ -13,8 +14,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
+      - uses: actions/checkout@v2
+
+      - name: Install latest Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt, clippy
+
+    - name: Build flyg-backend
       run: cargo build --verbose --bin flyg-backend
-    - name: Run tests
+
+    - name: Run flyg-backend tests
       run: cargo test --verbose --bin flyg-backend
