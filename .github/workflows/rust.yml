@@ -23,8 +23,8 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-     - name: Build flyg-backend
-       run: cargo build --verbose --bin flyg-backend
+      - name: Build flyg-backend
+        run: cargo build --verbose --bin flyg-backend
 
-     - name: Run flyg-backend tests
-       run: cargo test --verbose --bin flyg-backend
+      - name: Run flyg-backend tests
+        run: cargo test --verbose --bin flyg-backend
