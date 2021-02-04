@@ -1,12 +1,11 @@
 CREATE TABLE airports
 (
     id          SERIAL PRIMARY KEY,
-    icao_code   VARCHAR(4) NOT NULL UNIQUE, -- the official ICAO code of the airport
-    last_update TIMESTAMP  NOT NULL,        -- when were the information updated the last time?
-    country     VARCHAR(2) NOT NULL,        -- two letter country code
-    longitude   REAL       NOT NULL,        -- with 6 decimal places
-    latitude    REAL       NOT NULL,        -- with 6 decimal places
-    name        VARCHAR    NOT NULL         -- in English
+    icao_code   VARCHAR(4)                NOT NULL UNIQUE, -- the official ICAO code of the airport
+    last_update TIMESTAMP                 NOT NULL,        -- when were the information updated the last time?
+    country     VARCHAR(2)                NOT NULL,        -- two letter country code
+    coordinates GEOGRAPHY(GEOMETRY, 4326) NOT NULL,        -- PostGIS
+    name        VARCHAR                   NOT NULL         -- in English
 );
 
 CREATE TABLE runways
