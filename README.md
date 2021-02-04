@@ -2,7 +2,7 @@
 TODO
 
 ## Build status
-| Tool           | Build status                                                                                                  | Notes                     |
+| Tool           | Build status (main branch)                                                                                    | Notes                     |
 | :------------- | :-----------------------------------------------------------------------------------------------------------: | :------------------------ |
 |  flyg          | :grey_question:                                                                                               | Requires the MSFS2020 SDK |
 |  flyg-backend  | ![flyg-backend](https://github.com/flying7eleven/flyg/workflows/flyg-backend%20(build)/badge.svg?branch=main) | -                         |
