@@ -51,6 +51,11 @@ fn main() {
         .request_plane_title_updates()
         .expect("No plane title update!");
 
+    // request updates for the performance parameter of the plane
+    simulator_connection
+        .request_plane_performance_parameter_updates()
+        .expect("No plane title update!");
+
     // process the messages we receive from the simulator
     loop {
         match simulator_connection.get_next_notification() {
@@ -69,6 +74,31 @@ fn main() {
             }
             Some(Notification::AircraftTitle(title)) => {
                 info!("Aircraft title update. Title: {}", title);
+            }
+            Some(Notification::AircraftParameters(parameters)) => {
+                info!("Aircraft parameters received!");
+                info!(
+                    "  - Number of engines         : {}",
+                    parameters.number_of_engines
+                );
+                info!(
+                    "  - Type of engines           : {:?}",
+                    parameters.engine_type
+                );
+                info!(
+                    "  - Engine RPM       (1,2,3,4): {}, {}, {}, {}",
+                    parameters.engine_rpm[0],
+                    parameters.engine_rpm[1],
+                    parameters.engine_rpm[2],
+                    parameters.engine_rpm[3]
+                );
+                info!(
+                    "  - Engine FF [Lb/h] (1,2,3,4): {}, {}, {}, {}",
+                    parameters.fuel_flow[0],
+                    parameters.fuel_flow[1],
+                    parameters.fuel_flow[2],
+                    parameters.fuel_flow[3]
+                );
             }
             None => {}
         }
