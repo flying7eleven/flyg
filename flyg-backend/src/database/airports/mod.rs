@@ -1,5 +1,4 @@
 use super::schema::{airports, runway_airport_associations, runways};
-use crate::FlygDatabaseConnection;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::PgConnection;
@@ -116,13 +115,54 @@ pub fn get_runway_information_for_icao_code(
     };
 }
 
+#[derive(Queryable)]
+struct AirportByDistance {
+    icao_code: String,
+    longitude: f32,
+    latitude: f32,
+    distance: f64,
+}
+
 pub fn get_closest_airport_for_coordinates(
     database_connection: &PgConnection,
-    latitude: f32,
-    longitude: f32,
+    latitude_reference: f32,
+    longitude_reference: f32,
 ) -> Result<(Airport, f32), FlygDatabaseError> {
     // TODO: https://stackoverflow.com/questions/53596947/how-do-i-create-a-custom-diesel-query-using-sql-functions-with-user-provided-inp
     // TODO: https://docs.rs/diesel/1.3.3/diesel/macro.sql_function.html
+    use super::schema::airports::dsl::{airports, icao_code, latitude, longitude};
+    use diesel::dsl::sql;
+    use diesel::sql_types::{Bool, Double};
+    use log::{error, info};
+
+    let result = match airports.select(
+        (
+            icao_code,
+            longitude,
+            latitude,
+            sql::<Double>(
+                &format!("(3959.0 * acos(cos(radians({lat})) * cos(radians(latitude)) * cos(radians(longitude) - radians({long})) + sin(radians({lat})) * sin(radians(latitude)))) AS distance", lat=latitude_reference, long=longitude_reference)
+            )
+        )
+    )
+        .order(sql::<Double>("distance ASC"))
+        .limit(3)
+        .load::<AirportByDistance>(database_connection)
+    {
+        Ok(result) => result,
+        Err(error) => {
+            error!("{:?}", error);
+            return Err(FlygDatabaseError::NoResults);
+        }
+    };
+
+    for airport in result {
+        info!(
+            "AIRPORT: {} has {}nm distance",
+            airport.icao_code, airport.distance
+        );
+    }
+
     Err(FlygDatabaseError::NoResults)
 }
 

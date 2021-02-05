@@ -15,6 +15,8 @@ fn setup_logger() {
             ))
         })
         .level(LevelFilter::Trace)
+        //.level_for("hyper::server", LevelFilter::Info)
+        .level_for("hyper", LevelFilter::Info)
         .chain(std::io::stdout())
         .apply();
 }
