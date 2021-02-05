@@ -1,8 +1,0 @@
-[package]
-name = "flyg-gui"
-version = "0.1.0"
-authors = ["Tim Hütz <tim+github@janke.biz>"]
-edition = "2018"
-
-[dependencies.iced]
-version = "0.2"
