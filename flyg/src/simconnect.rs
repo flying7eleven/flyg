@@ -440,7 +440,7 @@ impl SimConnect {
                 as_c_string!("PLANE LATITUDE"),
                 as_c_string!("Degrees"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
-                0.0,
+                0.00001,
                 bindings::SIMCONNECT_UNUSED,
             )
         };
@@ -457,7 +457,7 @@ impl SimConnect {
                 as_c_string!("PLANE LONGITUDE"),
                 as_c_string!("Degrees"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
-                0.0,
+                0.00001,
                 bindings::SIMCONNECT_UNUSED,
             )
         };
@@ -474,7 +474,7 @@ impl SimConnect {
                 as_c_string!("PLANE ALTITUDE"),
                 as_c_string!("Feet"),
                 bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_FLOAT64,
-                0.0,
+                0.00001,
                 bindings::SIMCONNECT_UNUSED,
             )
         };
