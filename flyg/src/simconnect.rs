@@ -192,7 +192,7 @@ impl SimConnect {
         }
     }
 
-    pub fn get_next_notification(&mut self) -> Option<Notification> {
+    pub fn get_next_notification(&self) -> Option<Notification> {
         use log::{error, trace, warn};
         use std::mem::transmute_copy;
 
@@ -238,7 +238,6 @@ impl SimConnect {
 
             // simple event that the connection to the simulator was closed
             bindings::SIMCONNECT_RECV_ID_SIMCONNECT_RECV_ID_QUIT => {
-                self.handle = null_mut::<c_void>();
                 Some(Notification::Disconnected)
             }
 
