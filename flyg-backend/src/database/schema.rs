@@ -2,12 +2,16 @@ table! {
     aircraft (id) {
         id -> Int4,
         aircraft_model -> Int4,
+        registration -> Varchar,
+        owner -> Nullable<Int4>,
     }
 }
 
 table! {
     aircraft_models (id) {
         id -> Int4,
+        manufacturer -> Varchar,
+        model -> Varchar,
     }
 }
 
@@ -36,7 +40,7 @@ table! {
         id -> Int4,
         primary_direction -> Int4,
         secondary_direction -> Int4,
-        primary_denominator -> Nullable<Varchar>,
+        primary_suffix -> Nullable<Varchar>,
         runway_length -> Int4,
         runway_width -> Int4,
     }
@@ -49,6 +53,7 @@ table! {
 }
 
 joinable!(aircraft -> aircraft_models (aircraft_model));
+joinable!(aircraft -> users (owner));
 joinable!(runway_airport_associations -> airports (airport_id));
 joinable!(runway_airport_associations -> runways (runway_id));
 
