@@ -20,3 +20,12 @@ VALUES (DEFAULT, 1, 1),
        (DEFAULT, 4, 4),
        (DEFAULT, 5, 5),
        (DEFAULT, 5, 6);
+
+INSERT INTO users
+VALUES (DEFAULT);
+
+INSERT INTO aircraft_models
+VALUES (DEFAULT, 'Beechcraft', 'Baron G58');
+
+INSERT INTO aircraft
+VALUES (DEFAULT, 1, 'D-GKHT', 1);
