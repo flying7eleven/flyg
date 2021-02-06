@@ -46,6 +46,10 @@ pub struct SimConnect {
     handle: *mut c_void,
 }
 
+unsafe impl Send for SimConnect {}
+
+unsafe impl Sync for SimConnect {}
+
 impl SimConnect {
     pub fn new() -> Self {
         SimConnect {
