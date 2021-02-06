@@ -2,7 +2,7 @@ use crate::bindings;
 use num_enum::TryFromPrimitive;
 use std::convert::TryFrom;
 use std::ffi::{c_void, CString};
-use std::ptr::{null, null_mut};
+use std::ptr::null_mut;
 use std::time::Duration;
 
 macro_rules! as_c_string {
@@ -17,64 +17,29 @@ pub enum Event {
     UserTextDisplay,
 }
 
-#[repr(u32)]
-#[derive(Copy, Clone, Debug)]
-pub enum EngineType {
-    Piston = 0,
-    Jet = 1,
-    None = 2,
-    HeloTurbine = 3,
-    Unsupported = 4,
-    Turboprop = 5,
-}
-
 pub enum Notification {
     Connected,
     Disconnected,
-    Position(PositionInformation),
-    AircraftAtcId(AircraftAtcInformation),
-    AircraftTitle(String),
-    AircraftParameters(AircraftCollectedParameters),
+    PositionUpdate(AircraftPosition),
 }
 
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 enum Request {
     AircraftPositionRequest,
-    AircraftAtcIdRequest,
-    AircraftTitleRequest,
-    AircraftParametersRequest,
 }
 
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 enum ClientDataDefinition {
     AircraftPositionInformation,
-    AircraftAtcId,
-    AircraftTitle,
-    AircraftParameters,
 }
 
 #[derive(Copy, Clone)]
-pub struct AircraftCollectedParameters {
-    pub engine_type: EngineType,
-    pub number_of_engines: i32,
-    pub fuel_flow: [i32; 4],
-    pub engine_rpm: [i32; 4],
-}
-
-#[derive(Copy, Clone)]
-pub struct PositionInformation {
+pub struct AircraftPosition {
     pub latitude: f64,
     pub longitude: f64,
     pub altitude: f64,
-}
-
-#[derive(Clone)]
-pub struct AircraftAtcInformation {
-    pub tail_number: String,
-    pub callsign: String,
-    pub flight_number: String,
 }
 
 pub struct SimConnect {
@@ -114,319 +79,6 @@ impl SimConnect {
 
         // store the connection handle
         self.handle = handle;
-        Ok(())
-    }
-
-    pub fn request_plane_performance_parameter_updates(&self) -> Result<(), i32> {
-        use log::error;
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("NUMBER OF ENGINES"),
-                as_c_string!("Number"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                0.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("ENGINE TYPE"),
-                as_c_string!("Enum"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                0.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("RECIP ENG FUEL FLOW:1"),
-                as_c_string!("Pounds per hour"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                1.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("RECIP ENG FUEL FLOW:2"),
-                as_c_string!("Pounds per hour"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                1.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("RECIP ENG FUEL FLOW:3"),
-                as_c_string!("Pounds per hour"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                1.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("RECIP ENG FUEL FLOW:4"),
-                as_c_string!("Pounds per hour"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                1.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("GENERAL ENG RPM:1"),
-                as_c_string!("Rpm"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                10.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("GENERAL ENG RPM:2"),
-                as_c_string!("Rpm"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                10.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("GENERAL ENG RPM:3"),
-                as_c_string!("Rpm"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                10.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftParameters as u32,
-                as_c_string!("GENERAL ENG RPM:4"),
-                as_c_string!("Rpm"),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_INT32,
-                10.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let request_data_on_sim_object_result = unsafe {
-            bindings::SimConnect_RequestDataOnSimObject(
-                self.handle,
-                Request::AircraftParametersRequest as u32,
-                ClientDataDefinition::AircraftParameters as u32,
-                bindings::SIMCONNECT_OBJECT_ID_USER,
-                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_SIM_FRAME,
-                bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
-                0,
-                0,
-                0,
-            )
-        };
-
-        if 0x0 != request_data_on_sim_object_result {
-            error!("FAIL!");
-            return Err(request_data_on_sim_object_result);
-        }
-
-        Ok(())
-    }
-
-    pub fn request_plane_title_updates(&self) -> Result<(), i32> {
-        use log::error;
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftTitle as u32,
-                as_c_string!("title"),
-                null(),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING260,
-                0.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let request_data_on_sim_object_result = unsafe {
-            bindings::SimConnect_RequestDataOnSimObject(
-                self.handle,
-                Request::AircraftTitleRequest as u32,
-                ClientDataDefinition::AircraftTitle as u32,
-                bindings::SIMCONNECT_OBJECT_ID_USER,
-                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_SECOND,
-                bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
-                0,
-                0,
-                0,
-            )
-        };
-
-        if 0x0 != request_data_on_sim_object_result {
-            error!("FAIL!");
-            return Err(request_data_on_sim_object_result);
-        }
-
-        Ok(())
-    }
-
-    pub fn request_atc_id_updates(&self) -> Result<(), i32> {
-        use log::error;
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftAtcId as u32,
-                as_c_string!("ATC ID"),
-                null(),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
-                0.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftAtcId as u32,
-                as_c_string!("ATC AIRLINE"),
-                null(),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
-                0.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let add_to_data_definition_result = unsafe {
-            bindings::SimConnect_AddToDataDefinition(
-                self.handle,
-                ClientDataDefinition::AircraftAtcId as u32,
-                as_c_string!("ATC FLIGHT NUMBER"),
-                null(),
-                bindings::SIMCONNECT_DATATYPE_SIMCONNECT_DATATYPE_STRING64,
-                0.0,
-                bindings::SIMCONNECT_UNUSED,
-            )
-        };
-
-        if 0x0 != add_to_data_definition_result {
-            error!("FAIL!");
-            return Err(add_to_data_definition_result);
-        }
-
-        let request_data_on_sim_object_result = unsafe {
-            bindings::SimConnect_RequestDataOnSimObject(
-                self.handle,
-                Request::AircraftAtcIdRequest as u32,
-                ClientDataDefinition::AircraftAtcId as u32,
-                bindings::SIMCONNECT_OBJECT_ID_USER,
-                bindings::SIMCONNECT_PERIOD_SIMCONNECT_PERIOD_SECOND,
-                bindings::SIMCONNECT_DATA_REQUEST_FLAG_CHANGED,
-                0,
-                0,
-                0,
-            )
-        };
-
-        if 0x0 != request_data_on_sim_object_result {
-            error!("FAIL!");
-            return Err(request_data_on_sim_object_result);
-        }
-
         Ok(())
     }
 
@@ -621,89 +273,9 @@ impl SimConnect {
                     // have to convert the pointer to the memory space to the structure we know and return it
                     // to the user
                     Ok(Request::AircraftPositionRequest) => {
-                        let position_data: &PositionInformation =
+                        let position_data: &AircraftPosition =
                             unsafe { transmute_copy(&&object_data.dwData) };
-                        Some(Notification::Position(position_data.clone()))
-                    }
-
-                    // we received this request response for the ATC ID (Tail number) for the plane. This can be caused
-                    // due to a reload of the plane, a change by the user or any other tool or simply by the startup of
-                    // the scenario
-                    Ok(Request::AircraftAtcIdRequest) => {
-                        struct TemporaryDataRepresentation {
-                            tailnumber: [u8; 64],
-                            callsign: [u8; 64],
-                            flight_number: [u8; 64],
-                        }
-                        let atc_infos: &TemporaryDataRepresentation =
-                            unsafe { transmute_copy(&&object_data.dwData) };
-                        let atc_info = AircraftAtcInformation {
-                            tail_number: unsafe {
-                                let vector_to_cstring =
-                                    CString::from_vec_unchecked(atc_infos.tailnumber.to_vec());
-                                match vector_to_cstring.to_str() {
-                                    Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
-                                    Err(error) => {
-                                        error!("Could not convert the ATC ID to a valid string. The error was: {}", error.to_string());
-                                        "<???>".to_string()
-                                    }
-                                }
-                            },
-                            flight_number: unsafe {
-                                let vector_to_cstring =
-                                    CString::from_vec_unchecked(atc_infos.flight_number.to_vec());
-                                match vector_to_cstring.to_str() {
-                                    Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
-                                    Err(error) => {
-                                        error!("Could not convert the ATC FLIGHT NUMBER to a valid string. The error was: {}", error.to_string());
-                                        "<???>".to_string()
-                                    }
-                                }
-                            },
-                            callsign: unsafe {
-                                let vector_to_cstring =
-                                    CString::from_vec_unchecked(atc_infos.callsign.to_vec());
-                                match vector_to_cstring.to_str() {
-                                    Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
-                                    Err(error) => {
-                                        error!("Could not convert the ATC AIRLINE to a valid string. The error was: {}", error.to_string());
-                                        "<???>".to_string()
-                                    }
-                                }
-                            },
-                        };
-                        Some(Notification::AircraftAtcId(atc_info))
-                    }
-
-                    // the response to this message means, that we received the title of the plance which should
-                    // be enough right know, to identify the plane (at least as long we are not using flyg publicly
-                    // for anyone)
-                    Ok(Request::AircraftTitleRequest) => {
-                        struct TemporaryDataRepresentation {
-                            title: [u8; 260],
-                        }
-                        let aircraft_title: &TemporaryDataRepresentation =
-                            unsafe { transmute_copy(&&object_data.dwData) };
-                        let aicraft_title_as_string = unsafe {
-                            let vector_to_cstring =
-                                CString::from_vec_unchecked(aircraft_title.title.to_vec());
-                            match vector_to_cstring.to_str() {
-                                Ok(as_str) => as_str.trim_matches(char::from(0)).to_string(),
-                                Err(error) => {
-                                    error!("Could not convert the title of the aircraft to a valid string. The error was: {}", error.to_string());
-                                    "<???>".to_string()
-                                }
-                            }
-                        };
-
-                        Some(Notification::AircraftTitle(aicraft_title_as_string))
-                    }
-
-                    // TODO
-                    Ok(Request::AircraftParametersRequest) => {
-                        let aircraft_parameter: &AircraftCollectedParameters =
-                            unsafe { transmute_copy(&&object_data.dwData) };
-                        Some(Notification::AircraftParameters(aircraft_parameter.clone()))
+                        Some(Notification::PositionUpdate(position_data.clone()))
                     }
 
                     // we received the answer to a request we are currently not handling. Log a warning since this
