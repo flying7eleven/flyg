@@ -13,6 +13,7 @@ fn main() {
         .clang_args(&["-x", "c++"])
         .whitelist_function("SimConnect_Open")
         .whitelist_function("SimConnect_Close")
+        .whitelist_function("SimConnect_GetLastSentPacketID")
         .whitelist_function("SimConnect_GetNextDispatch")
         .whitelist_function("SimConnect_Text")
         .whitelist_function("SimConnect_AddToDataDefinition")

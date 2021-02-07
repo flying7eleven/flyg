@@ -47,8 +47,24 @@ fn main() {
     {
         let arc_sim_connection = arc_sim_connection.clone();
         data_processing_thread = spawn(move || loop {
-            let guard = arc_sim_connection.lock().unwrap();
-            match guard.get_next_notification() {
+            let simulator_connection = match arc_sim_connection.lock() {
+                Ok(guard) => guard,
+                Err(error) => {
+                    info!("It seems that the mutex guard is currently locked ({}), waiting for a while...", error);
+                    std::thread::sleep(std::time::Duration::from_secs(1));
+                    continue;
+                }
+            };
+
+            // ensure that we have a connection to the simulator. if not, wait some time and try again
+            if !simulator_connection.is_connected() {
+                std::mem::drop(simulator_connection);
+                info!("It seems, that we do not have a connection to the simulator. Waiting for some seconds before continuing...");
+                std::thread::sleep(std::time::Duration::from_secs(5));
+                continue;
+            }
+
+            match simulator_connection.get_next_notification() {
                 Some(Notification::Connected) => info!("Connection opened!"),
                 Some(Notification::Disconnected) => info!("Connection closed!"),
                 Some(Notification::PositionUpdate(position)) => {

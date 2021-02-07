@@ -57,6 +57,44 @@ impl SimConnect {
         }
     }
 
+    /// Checks if the client is connected to the simulator or not.
+    ///
+    /// There are multiple reasons why the connection to the simulator is lost and if
+    /// we know about it or have to check it ourself. If the connection was lost due to exiting
+    /// the simulator, the clients gets disconnected properly and we can notice that the connection
+    /// was lost. If there was an error and the simulator connection gets closed, it might happen,
+    /// that we still have an handle to the connection but it is not valid anymore. This method checks
+    /// all known conditions and returns the currect connection state.
+    ///
+    /// ## Example
+    ///
+    /// ```rust
+    /// use flyg::simconnect::SimConnect;
+    ///
+    /// let connection = SimConnect::new();
+    /// if !connection.is_connected() {
+    ///     println!("The simulator is *not* connected!");
+    /// }
+    /// ```
+    pub fn is_connected(&self) -> bool {
+        // if the stored handle is null, there cannot be any connection, so
+        // we are quite sure, that the simulator is not connected
+        if self.handle == std::ptr::null_mut() {
+            return false;
+        }
+
+        // try to query the last send package identifier, if this succeeds, we are still connected
+        // and can communicate with the simulator, otherwise we may have lost the connection
+        let mut packet_id: bindings::DWORD = 0;
+        if unsafe { bindings::SimConnect_GetLastSentPacketID(self.handle, &mut packet_id) } != 0x0 {
+            return false;
+        }
+
+        // if we reach this step, we are sure, that we have a valid connection
+        // and can communicate with the simulator
+        true
+    }
+
     pub fn connect(&mut self) -> Result<(), String> {
         let mut handle = std::ptr::null_mut();
 
