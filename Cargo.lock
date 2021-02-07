@@ -415,17 +415,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "flyg"
-version = "0.1.0"
-dependencies = [
- "bindgen",
- "chrono",
- "fern",
- "log 0.4.11",
- "num_enum",
-]
-
-[[package]]
 name = "flyg-backend"
 version = "0.1.0"
 dependencies = [
@@ -445,8 +434,19 @@ dependencies = [
  "chrono",
  "dialoguer",
  "fern",
- "flyg",
+ "flyg-msfs2020",
  "log 0.4.11",
+]
+
+[[package]]
+name = "flyg-msfs2020"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "chrono",
+ "fern",
+ "log 0.4.11",
+ "num_enum",
 ]
 
 [[package]]

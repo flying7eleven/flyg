@@ -1,7 +1,7 @@
 [workspace]
 
 members = [
-    "flyg",
     "flyg-client",
     "flyg-backend",
+    "flyg-msfs2020",
 ]

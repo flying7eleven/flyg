@@ -23,7 +23,7 @@ fn initialize_logging() {
 }
 
 fn main() {
-    use flyg::simconnect::{Notification, SimConnect};
+    use flyg_msfs2020::simconnect::{Notification, SimConnect};
     use log::info;
     use std::sync::{Arc, Mutex};
     use std::thread::spawn;
