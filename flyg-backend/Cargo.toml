@@ -31,3 +31,8 @@ version = "0.6"
 version = "1.0"
 features = ["derive"]
 
+[dependencies.bcrypt]
+version = "0.9"
+
+[dependencies.jwt]
+version = "0.12"
