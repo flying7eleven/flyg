@@ -472,6 +472,7 @@ dependencies = [
  "diesel",
  "fern",
  "jsonwebtoken",
+ "lazy_static",
  "log 0.4.11",
  "rocket",
  "rocket_contrib",

@@ -5,6 +5,9 @@ authors = ["Tim Hütz <tim+github@janke.biz>"]
 edition = "2018"
 description = "Backend system for the Flyg flight economy simulation system."
 
+[dependencies.lazy_static]
+version = "1.4"
+
 [dependencies.diesel]
 version = "1.4"
 default-features = false
