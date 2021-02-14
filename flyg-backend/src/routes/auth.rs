@@ -29,7 +29,7 @@ struct Claims {
     sub: String,
 }
 
-/// TODO
+/// The response for a request for a new token.
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TokenResponse {
@@ -101,12 +101,48 @@ fn get_token_for_user(subject: &String) -> Option<String> {
 /// the username and password for a user.
 #[post("/auth/token", data = "<login_information>")]
 pub fn get_login_token(
+    database_connection: FlygDatabaseConnection,
     login_information: Json<LoginInformation>,
 ) -> Result<Json<TokenResponse>, Status> {
+    use crate::database::auth::get_user_record;
+    use bcrypt::verify;
+    use log::error;
+
+    // try to get the user record for the supplied email address / username
+    let user = match get_user_record(&*database_connection, &login_information.username) {
+        Ok(user) => user,
+        Err(error) => {
+            error!(
+                "Could not get the user record for '{}'. The error was: {:?}",
+                login_information.username, error
+            );
+            return Err(Status::Unauthorized);
+        }
+    };
+
+    // check if the supplied password matches the one we stored in the database using the same bcrypt
+    // parameters
+    match verify(&login_information.password, user.password.as_str()) {
+        Ok(is_password_correct) => {
+            if !is_password_correct {
+                return Err(Status::Unauthorized);
+            }
+        }
+        Err(error) => {
+            error!("Could not verify the supplied password with the one stored in the database. The error was: {}", error);
+            return Err(Status::InternalServerError);
+        }
+    }
+
+    // if we get here, the we ensured that the user is known and that the supplied password
+    // was valid, we can generate a new access token and return it to the calling party
     if let Some(token) = get_token_for_user(&login_information.username) {
         return Ok(Json(TokenResponse {
             access_token: token,
         }));
     }
+
+    // it seems that we failed to generate a valid token, this should never happen, something
+    // seems to be REALLY wrong
     Err(Status::InternalServerError)
 }
