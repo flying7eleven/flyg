@@ -34,5 +34,5 @@ features = ["derive"]
 [dependencies.bcrypt]
 version = "0.9"
 
-[dependencies.jwt]
-version = "0.12"
+[dependencies.jsonwebtoken]
+version = "7.2"
