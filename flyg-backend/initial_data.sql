@@ -22,7 +22,7 @@ VALUES (DEFAULT, 1, 1),
        (DEFAULT, 5, 6);
 
 INSERT INTO users
-VALUES (DEFAULT);
+VALUES (DEFAULT, 'Demo', 'User', 'demo@example.com', '$2y$12$CuLVXmwa85/L1ifFFrMa6uKBAuxV9n68/KK.fe9GzEl2C9qo3bVNC');
 
 INSERT INTO aircraft_models
 VALUES (DEFAULT, 'Beechcraft', 'Baron G58');
