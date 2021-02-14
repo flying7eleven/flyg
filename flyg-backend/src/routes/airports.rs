@@ -1,7 +1,8 @@
 use crate::database::airports::{
     get_closest_airport_for_coordinates, get_information_for_icao_code,
-    get_runway_information_for_icao_code, FlygDatabaseError,
+    get_runway_information_for_icao_code,
 };
+use crate::database::FlygDatabaseError;
 use crate::FlygDatabaseConnection;
 use rocket::http::{RawStr, Status};
 use rocket::{get, post};

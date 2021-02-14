@@ -1,4 +1,5 @@
 use super::schema::{airports, runway_airport_associations, runways};
+use super::FlygDatabaseError;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::PgConnection;
@@ -37,15 +38,6 @@ pub struct RunwayAirportAssociations {
     pub id: i32,
     pub airport_id: i32,
     pub runway_id: i32,
-}
-
-pub enum FlygDatabaseError {
-    /// Failed to query the database for the requested information.
-    FailedToQueryDatabase,
-    /// Got more than one results which was not expected.
-    MoreThanOneResult,
-    /// Could not find the requested information.
-    NoResults,
 }
 
 /// Query the database for all information for a specific airport.
