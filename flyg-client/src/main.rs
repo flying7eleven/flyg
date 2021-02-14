@@ -1,3 +1,5 @@
+use flyg_core::Notification;
+
 fn initialize_logging() {
     use chrono::Local;
     use log::LevelFilter;
@@ -23,7 +25,7 @@ fn initialize_logging() {
 }
 
 fn main() {
-    use flyg_msfs2020::simconnect::{Notification, SimConnect};
+    use flyg_msfs2020::simconnect::SimConnect;
     use log::info;
     use std::sync::{Arc, Mutex};
     use std::thread::spawn;

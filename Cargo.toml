@@ -2,6 +2,7 @@
 
 members = [
     "flyg-client",
+    "flyg-core",
     "flyg-backend",
     "flyg-msfs2020",
 ]

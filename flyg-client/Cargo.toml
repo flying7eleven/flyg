@@ -11,6 +11,9 @@ path = "src/main.rs"
 [dependencies.flyg-msfs2020]
 path = "../flyg-msfs2020"
 
+[dependencies.flyg-core]
+path = "../flyg-core"
+
 [dependencies.chrono]
 version = "0.4"
 

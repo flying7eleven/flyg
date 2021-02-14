@@ -1,26 +1,15 @@
 use crate::bindings;
+use flyg_core::{AircraftPosition, Notification};
 use num_enum::TryFromPrimitive;
 use std::convert::TryFrom;
 use std::ffi::{c_void, CString};
 use std::ptr::null_mut;
 use std::time::Duration;
 
-macro_rules! as_c_string {
-    ($target:expr) => {
-        std::ffi::CString::new($target).unwrap().as_ptr();
-    };
-}
-
 #[repr(u32)]
 #[derive(Copy, Clone, TryFromPrimitive)]
 pub enum Event {
     UserTextDisplay,
-}
-
-pub enum Notification {
-    Connected,
-    Disconnected,
-    PositionUpdate(AircraftPosition),
 }
 
 #[repr(u32)]
@@ -35,11 +24,10 @@ enum ClientDataDefinition {
     AircraftPositionInformation,
 }
 
-#[derive(Copy, Clone)]
-pub struct AircraftPosition {
-    pub latitude: f64,
-    pub longitude: f64,
-    pub altitude: f64,
+macro_rules! as_c_string {
+    ($target:expr) => {
+        std::ffi::CString::new($target).unwrap().as_ptr();
+    };
 }
 
 pub struct SimConnect {
