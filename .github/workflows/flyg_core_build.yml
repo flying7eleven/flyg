@@ -1,0 +1,30 @@
+name: flyg-core (build)
+
+on:
+  push:
+    branches: [ main ]
+
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install latest Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - name: Build flyg-core
+        run: cargo build --verbose --package flyg-core
+
+      - name: Run flyg-core tests
+        run: cargo test --verbose --package flyg-core
