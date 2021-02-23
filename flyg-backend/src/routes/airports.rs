@@ -1,5 +1,5 @@
 use crate::database::airports::{
-    get_closest_airport_for_coordinates, get_information_for_icao_code,
+    get_closest_airports_for_coordinates, get_information_for_icao_code,
     get_runway_information_for_icao_code,
 };
 use crate::database::FlygDatabaseError;
@@ -41,7 +41,7 @@ pub struct RunwayInformation {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AirportInformation {
-    /// The four-letter ICAO code of the represented airport
+    /// The four-letter ICAO code of the represented airport.
     icao_code: String,
     /// The two-letter country code in which the airport is in.
     country_code: String,
@@ -51,6 +51,17 @@ pub struct AirportInformation {
     position: Coordinates,
     /// A list of all runways of the airport.
     runways: Vec<RunwayInformation>,
+}
+
+/// A data tuple describing the identifier of an airport combined with the distance to some reference
+/// point in nautical miles.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirportDistance {
+    /// The four-letter ICAO code of the represented airport.
+    icao_code: String,
+    /// The distance to the airport in nautical miles.
+    distance: f32,
 }
 
 /// TODO
@@ -71,7 +82,7 @@ pub fn get_closest_airport_to_position(
     database_connection: FlygDatabaseConnection,
     latitude: &RawStr,
     longitude: &RawStr,
-) -> Result<Json<()>, Status> {
+) -> Result<Json<Vec<AirportDistance>>, Status> {
     use log::error;
 
     // convert the latitude to a float value
@@ -111,13 +122,28 @@ pub fn get_closest_airport_to_position(
         return Err(Status::BadRequest);
     }
 
-    get_closest_airport_for_coordinates(
+    let closest_airports = match get_closest_airports_for_coordinates(
         &*database_connection,
         latitude_as_float,
         longitude_as_float,
-    );
+    ) {
+        Ok(airports) => {
+            let mut prepared_airports = vec![];
+            for current_airport_tuple in airports {
+                prepared_airports.push(AirportDistance {
+                    icao_code: current_airport_tuple.0,
+                    distance: current_airport_tuple.1,
+                })
+            }
+            prepared_airports
+        }
+        Err(error) => {
+            return Err(Status::BadRequest);
+        }
+    };
 
-    Ok(Json(()))
+    //
+    Ok(Json(closest_airports))
 }
 
 /// # Get information about a specific airport

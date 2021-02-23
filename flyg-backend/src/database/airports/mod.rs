@@ -115,11 +115,11 @@ struct AirportByDistance {
     distance: f64,
 }
 
-pub fn get_closest_airport_for_coordinates(
+pub fn get_closest_airports_for_coordinates(
     database_connection: &PgConnection,
     latitude_reference: f32,
     longitude_reference: f32,
-) -> Result<(Airport, f32), FlygDatabaseError> {
+) -> Result<Vec<(String, f32)>, FlygDatabaseError> {
     // TODO: https://stackoverflow.com/questions/53596947/how-do-i-create-a-custom-diesel-query-using-sql-functions-with-user-provided-inp
     // TODO: https://docs.rs/diesel/1.3.3/diesel/macro.sql_function.html
     use super::schema::airports::dsl::{airports, icao_code, latitude, longitude};
@@ -148,14 +148,12 @@ pub fn get_closest_airport_for_coordinates(
         }
     };
 
+    //
+    let mut airports_to_return = vec![];
     for airport in result {
-        info!(
-            "AIRPORT: {} has {}nm distance",
-            airport.icao_code, airport.distance
-        );
+        airports_to_return.push((airport.icao_code, airport.distance as f32))
     }
-
-    Err(FlygDatabaseError::NoResults)
+    Ok(airports_to_return)
 }
 
 /// Query the database for the runway information for a specific airport.
