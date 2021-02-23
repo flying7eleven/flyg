@@ -15,6 +15,7 @@ features = ["postgres", "chrono"]
 
 [dependencies.rocket]
 version = "0.4"
+default-features = false
 
 [dependencies.rocket_contrib]
 version = "0.4"
@@ -33,6 +34,9 @@ version = "0.6"
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0"
 
 [dependencies.bcrypt]
 version = "0.9"

@@ -3,6 +3,9 @@
 #[macro_use]
 extern crate diesel;
 
+#[macro_use]
+extern crate rocket;
+
 use rocket_contrib::database;
 use rocket_contrib::databases::diesel::PgConnection;
 
