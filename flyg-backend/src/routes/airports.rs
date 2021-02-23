@@ -3,6 +3,7 @@ use crate::database::airports::{
     get_runway_information_for_icao_code,
 };
 use crate::database::FlygDatabaseError;
+use crate::routes::auth::AuthenticatedUser;
 use crate::FlygDatabaseConnection;
 use rocket::http::{RawStr, Status};
 use rocket::{get, post};
@@ -127,10 +128,14 @@ pub fn get_closest_airport_to_position(
 pub fn get_airport_information(
     database_connection: FlygDatabaseConnection,
     icao_code: String,
+    _authenticated_user: AuthenticatedUser,
 ) -> Result<Json<AirportInformation>, Status> {
+    use log::error;
+
     // an ICAO code is always for letters/digits long, everything else seems to be an
     // invalid request
     if icao_code.len() != 4 {
+        error!("Invalid (too short) ICAO code provided: '{}'", icao_code);
         return Err(Status::BadRequest);
     }
 
@@ -151,7 +156,7 @@ pub fn get_airport_information(
                         }
                         FlygDatabaseError::MoreThanOneResult => Err(Status::InternalServerError),
                         FlygDatabaseError::NoResults => Err(Status::NotFound),
-                    }
+                    };
                 }
             };
 

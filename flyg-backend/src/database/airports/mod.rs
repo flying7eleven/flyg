@@ -124,7 +124,7 @@ pub fn get_closest_airport_for_coordinates(
     // TODO: https://docs.rs/diesel/1.3.3/diesel/macro.sql_function.html
     use super::schema::airports::dsl::{airports, icao_code, latitude, longitude};
     use diesel::dsl::sql;
-    use diesel::sql_types::{Bool, Double};
+    use diesel::sql_types::Double;
     use log::{error, info};
 
     let result = match airports.select(
