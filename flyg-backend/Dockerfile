@@ -8,5 +8,6 @@ RUN cargo build --release
 
 # the actual container used for running the backend
 FROM alpine
-COPY --from=build_environment /build/target/release/flyg-backend /usr/bin/flyg-backend
-CMD ["/usr/bin/flyg-backend", "run"]
+COPY --from=build_environment /build/target/release/flyg-backend /usr/bin/flyg
+WORKDIR /etc/flyg
+CMD ["/usr/bin/flyg", "run"]
