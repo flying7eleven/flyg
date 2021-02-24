@@ -11,4 +11,4 @@ FROM debian:buster-slim
 RUN apt update -y && apt install libpq5 curl -y
 COPY --from=build_environment /build/target/release/flyg-backend /usr/bin/flyg
 WORKDIR /etc/flyg
-CMD ["/usr/bin/flyg", "run"]
+CMD ["/usr/bin/flyg"]
