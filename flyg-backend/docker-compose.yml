@@ -1,0 +1,9 @@
+version: '3'
+services:
+  flyg_backend:
+    container_name: flyg_backend
+    image: flying7eleven/flyg_backend:0.1.0
+    ports:
+      - "127.0.0.1:54711:8000"
+    volumes:
+      - "../Rocket.toml:/etc/flyg/Rocket.toml:ro"
