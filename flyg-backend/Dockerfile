@@ -8,6 +8,7 @@ RUN cargo build --release
 
 # the actual container used for running the backend
 FROM alpine
+RUN apk update && apk add libpq
 COPY --from=build_environment /build/target/release/flyg-backend /usr/bin/flyg
 WORKDIR /etc/flyg
 CMD ["/usr/bin/flyg", "run"]
