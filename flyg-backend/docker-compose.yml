@@ -13,8 +13,7 @@ services:
     networks:
       - flyg
     depends_on:
-      flyg_dev_database:
-        condition: service_healthy
+      - flyg_dev_database
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:8000/v1/health || exit 1"]
       interval: 10s
