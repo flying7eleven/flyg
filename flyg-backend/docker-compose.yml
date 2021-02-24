@@ -1,9 +1,39 @@
 version: '3'
+networks:
+ flyg:
 services:
   flyg_backend:
     container_name: flyg_backend
-    image: flying7eleven/flyg_backend:0.1.0
+    image: flying7eleven/flyg_backend:latest
     ports:
       - "127.0.0.1:54711:8000"
     volumes:
       - "../Rocket.toml:/etc/flyg/Rocket.toml:ro"
+    restart: "no"
+    networks:
+      - flyg
+    depends_on:
+      flyg_dev_database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8000/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  flyg_dev_database:
+    container_name: flyg_dev_database
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=debuguser
+      - POSTGRES_PASSWORD=debugpassword
+      - POSTGRES_DB=flyg
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    restart: "no"
+    networks:
+      - flyg
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U debuguser -d flyg"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
