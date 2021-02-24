@@ -6,6 +6,7 @@ use serde_json::to_string;
 
 pub mod airports;
 pub mod auth;
+pub mod health;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

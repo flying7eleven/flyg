@@ -40,6 +40,7 @@ fn main() {
         .mount(
             "/v1",
             routes![
+                flyg_backend::routes::health::get_health_status,
                 flyg_backend::routes::auth::get_login_token,
                 flyg_backend::routes::airports::get_airport_information,
                 flyg_backend::routes::airports::get_closest_airport_to_position
