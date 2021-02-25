@@ -43,3 +43,6 @@ version = "0.9"
 
 [dependencies.jsonwebtoken]
 version = "7.2"
+
+[dependencies.toml]
+version = "0.5"
