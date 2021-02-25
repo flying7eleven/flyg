@@ -13,6 +13,9 @@ version = "1.4"
 default-features = false
 features = ["postgres", "chrono"]
 
+[dependencies.diesel_migrations]
+version = "1.4"
+
 [dependencies.rocket]
 version = "0.4"
 default-features = false

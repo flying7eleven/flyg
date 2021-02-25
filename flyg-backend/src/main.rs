@@ -1,9 +1,9 @@
-use chrono::Utc;
-use flyg_backend::FlygDatabaseConnection;
-use log::LevelFilter;
-use rocket::routes;
+use flyg_backend::get_configuration;
 
 fn setup_logger() {
+    use chrono::Utc;
+    use log::LevelFilter;
+
     let _ = fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
@@ -22,9 +22,19 @@ fn setup_logger() {
 }
 
 fn main() {
-    use rocket::catchers;
+    use flyg_backend::database::run_migrations;
+    use flyg_backend::FlygDatabaseConnection;
+    use rocket::{catchers, routes};
 
+    // the first step is to initialize the logging
     setup_logger();
+
+    // read the configuration
+    let config = get_configuration();
+
+    // ensure that the migrations on the database are ran before trying to
+    // start the API
+    run_migrations(&config.database_url);
 
     // if we could get the required database url, launch rocket for handling the requests to the backend
     rocket::ignite()
