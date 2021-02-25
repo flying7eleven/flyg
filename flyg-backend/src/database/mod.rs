@@ -12,7 +12,7 @@ pub enum FlygDatabaseError {
     NoResults,
 }
 
-#[cfg(debug_assertions)]
+#[cfg(not(debug_assertions))]
 embed_migrations!("migrations/");
 
 #[cfg(not(debug_assertions))]

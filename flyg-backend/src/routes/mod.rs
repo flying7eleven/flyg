@@ -1,4 +1,3 @@
-use rocket::http::Status;
 use rocket::response::content::Json;
 use rocket::Request;
 use serde::{Deserialize, Serialize};
