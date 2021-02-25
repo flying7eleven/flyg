@@ -137,7 +137,7 @@ pub fn get_closest_airport_to_position(
             }
             prepared_airports
         }
-        Err(error) => {
+        Err(_) => {
             return Err(Status::BadRequest);
         }
     };

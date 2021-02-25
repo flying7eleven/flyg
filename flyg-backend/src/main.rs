@@ -1,4 +1,5 @@
 use flyg_backend::get_configuration;
+use std::time::Duration;
 
 fn setup_logger() {
     use chrono::Utc;
@@ -21,6 +22,11 @@ fn setup_logger() {
         .apply();
 }
 
+fn wait_for_database(_: &str) {
+    use std::thread;
+    thread::sleep(Duration::from_secs(5)); // TODO: do actually check the database and retry several times
+}
+
 fn main() {
     use flyg_backend::database::run_migrations;
     use flyg_backend::FlygDatabaseConnection;
@@ -31,6 +37,10 @@ fn main() {
 
     // read the configuration
     let config = get_configuration();
+
+    // if everything is ran in docker containers, it can take a while until the container
+    // for the database is up and running. Just wait for it before continuing
+    wait_for_database(&config.database_url);
 
     // ensure that the migrations on the database are ran before trying to
     // start the API
