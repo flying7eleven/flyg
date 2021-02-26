@@ -189,6 +189,15 @@ fn get_token_for_user(subject: &String) -> Option<String> {
     None
 }
 
+/// # Request the public key for validating the tokens
+///
+/// The user (or better the client) can use this method to request the public key
+/// which can be used to validate the tokens offered by this backend.
+#[get("/auth/signature")]
+pub fn get_public_key_for_signature_validation() -> String {
+    include_str!("../../../jwt_token_public.pem").to_string() // TODO: read the file once the backend started
+}
+
 /// # Request a new access token
 ///
 /// The user can use this method to request a new access token by supplying
