@@ -1,9 +1,9 @@
-use crate::FlygDatabaseConnection;
+use crate::{FlygDatabaseConnection, FlygSettings};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use lazy_static::lazy_static;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};
-use rocket::{post, Request};
+use rocket::{post, Request, State};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -52,9 +52,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
     type Error = AuthorizationError;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<AuthenticatedUser, AuthorizationError> {
+        use crate::FlygSettings;
         use jsonwebtoken::decode;
         use log::error;
+        use rocket::State;
 
+        //
         let maybe_authorization_header = request.headers().get_one("Authorization");
         match maybe_authorization_header {
             Some(maybe_authorization) => {
@@ -86,10 +89,25 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
                 validation_parameter.validate_exp = true;
                 validation_parameter.validate_nbf = true;
 
+                // get the current flyg configuration (for the public key)
+                let flyg_configuration = match request.guard::<State<FlygSettings>>() {
+                    Outcome::Success(state) => state,
+                    Outcome::Failure(_) => {
+                        error!(
+                            "Could not get the current configuration for extracting the toking signing key"
+                        );
+                        return Outcome::Failure((
+                            Status::Forbidden,
+                            AuthorizationError::NoDecodingKey,
+                        ));
+                    }
+                    Outcome::Forward(forward) => return Outcome::Forward(forward),
+                };
+
                 // get the 'validation' key for the token
-                let decoding_key = match DecodingKey::from_rsa_pem(include_bytes!(
-                    "../../../jwt_token_public.pem"
-                )) {
+                let decoding_key = match DecodingKey::from_rsa_pem(
+                    flyg_configuration.public_key.as_bytes(),
+                ) {
                     Ok(key) => key,
                     Err(error) => {
                         error!("Could not get the public key for the token validation. The error was: {}", error);
@@ -158,7 +176,7 @@ lazy_static! {
 /// This method will return a new access token for the given `subject`. It will *not* check
 /// if the subject is authorized to get a token or of the subject is even valid. This has to
 /// be done from the calling party!
-fn get_token_for_user(subject: &String) -> Option<String> {
+fn get_token_for_user(subject: &String, private_key: &String) -> Option<String> {
     use jsonwebtoken::{encode, EncodingKey, Header};
     use log::error;
 
@@ -188,17 +206,16 @@ fn get_token_for_user(subject: &String) -> Option<String> {
     };
 
     // get the signing key for the token
-    let encoding_key =
-        match EncodingKey::from_rsa_pem(include_bytes!("../../../jwt_token_private.pem")) {
-            Ok(key) => key,
-            Err(error) => {
-                error!(
-                    "Could not get the signing key for the token. The error was: {}",
-                    error
-                );
-                return None;
-            }
-        };
+    let encoding_key = match EncodingKey::from_rsa_pem(private_key.as_bytes()) {
+        Ok(key) => key,
+        Err(error) => {
+            error!(
+                "Could not get the signing key for the token. The error was: {}",
+                error
+            );
+            return None;
+        }
+    };
 
     // generate a new JWT for the supplied header and token claims. if we were sucessfull, return
     // the token
@@ -216,8 +233,8 @@ fn get_token_for_user(subject: &String) -> Option<String> {
 /// The user (or better the client) can use this method to request the public key
 /// which can be used to validate the tokens offered by this backend.
 #[get("/auth/signature")]
-pub fn get_public_key_for_signature_validation() -> String {
-    include_str!("../../../jwt_token_public.pem").to_string() // TODO: read the file once the backend started
+pub fn get_public_key_for_signature_validation(configuration: State<FlygSettings>) -> String {
+    configuration.public_key.clone()
 }
 
 /// # Request a new access token
@@ -228,6 +245,7 @@ pub fn get_public_key_for_signature_validation() -> String {
 pub fn get_login_token(
     database_connection: FlygDatabaseConnection,
     login_information: Json<LoginInformation>,
+    configuration: State<FlygSettings>,
 ) -> Result<Json<TokenResponse>, Status> {
     use crate::database::auth::get_user_record;
     use bcrypt::verify;
@@ -270,7 +288,8 @@ pub fn get_login_token(
 
     // if we get here, the we ensured that the user is known and that the supplied password
     // was valid, we can generate a new access token and return it to the calling party
-    if let Some(token) = get_token_for_user(&login_information.username) {
+    if let Some(token) = get_token_for_user(&login_information.username, &configuration.private_key)
+    {
         return Ok(Json(TokenResponse {
             access_token: token,
         }));

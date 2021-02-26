@@ -8,6 +8,10 @@ write_timeout = 5
 [global.databases]
 flyg_database = { url = "postgres://debuguser:debugpassword@localhost/flyg" }
 
+[global.flyg.token]
+public_key = "jwt_token_public.pem"
+private_key = "jwt_token_private.pem"
+
 [development]
 address = "localhost"
 workers = 1

@@ -9,6 +9,8 @@ services:
       - "127.0.0.1:54711:8000"
     volumes:
       - "../Rocket.toml:/etc/flyg/Rocket.toml:ro"
+      - "../jwt_token_private.pem:/etc/flyg/jwt_token_private.pem:ro"
+      - "../jwt_token_public.pem:/etc/flyg/jwt_token_public.pem:ro"
     restart: "no"
     networks:
       - flyg

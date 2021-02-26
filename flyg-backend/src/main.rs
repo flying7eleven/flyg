@@ -49,6 +49,7 @@ fn main() {
     // if we could get the required database url, launch rocket for handling the requests to the backend
     rocket::ignite()
         .attach(FlygDatabaseConnection::fairing())
+        .manage(config)
         .register(catchers![
             flyg_backend::routes::catcher_bad_request,
             flyg_backend::routes::catcher_unauthorized,
