@@ -44,6 +44,8 @@ pub enum AuthorizationError {
     MalformedAuthorizationHeader,
     /// TODO
     InvalidToken,
+    ///
+    NoDecodingKey,
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
@@ -77,17 +79,31 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
                 }
 
                 // specify the parameter for the validation of the token
-                let mut validation_parameter = Validation::new(Algorithm::HS512);
+                let mut validation_parameter = Validation::new(Algorithm::RS256);
                 validation_parameter.leeway = 5; // allow a time difference of max. 5 seconds
                 validation_parameter.iss = Some(TOKEN_ISSUER.to_string());
                 validation_parameter.aud = None; // TODO: we should validate the audience at some point
                 validation_parameter.validate_exp = true;
                 validation_parameter.validate_nbf = true;
 
+                // get the 'validation' key for the token
+                let decoding_key = match DecodingKey::from_rsa_pem(include_bytes!(
+                    "../../../jwt_token_public.pem"
+                )) {
+                    Ok(key) => key,
+                    Err(error) => {
+                        error!("Could not get the public key for the token validation. The error was: {}", error);
+                        return Outcome::Failure((
+                            Status::Forbidden,
+                            AuthorizationError::NoDecodingKey,
+                        ));
+                    }
+                };
+
                 // verify the validity of the token supplied in the header
                 let decoded_token = match decode::<Claims>(
                     authorization_information[1],
-                    &DecodingKey::from_secret(TOKEN_SECRET.as_bytes()),
+                    &decoding_key,
                     &validation_parameter,
                 ) {
                     Ok(token) => token,
@@ -135,9 +151,6 @@ lazy_static! {
 
     /// TODO
     static ref TOKEN_ISSUER: &'static str = "flyg-backend";
-
-    /// The secret used for signing the token.
-    static ref TOKEN_SECRET: &'static str = "secret"; // TODO: move that into a configuration file before going live!!!
 }
 
 /// # Get an access token to access the API
@@ -174,14 +187,23 @@ fn get_token_for_user(subject: &String) -> Option<String> {
         sub: subject.clone(),
     };
 
+    // get the signing key for the token
+    let encoding_key =
+        match EncodingKey::from_rsa_pem(include_bytes!("../../../jwt_token_private.pem")) {
+            Ok(key) => key,
+            Err(error) => {
+                error!(
+                    "Could not get the signing key for the token. The error was: {}",
+                    error
+                );
+                return None;
+            }
+        };
+
     // generate a new JWT for the supplied header and token claims. if we were sucessfull, return
     // the token
-    let header = Header::new(Algorithm::HS512);
-    if let Ok(token) = encode(
-        &header,
-        &token_claims,
-        &EncodingKey::from_secret(TOKEN_SECRET.as_bytes()),
-    ) {
+    let header = Header::new(Algorithm::RS256);
+    if let Ok(token) = encode(&header, &token_claims, &encoding_key) {
         return Some(token);
     }
 
