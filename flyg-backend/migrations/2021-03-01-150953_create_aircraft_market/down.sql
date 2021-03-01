@@ -1,0 +1,1 @@
+DROP TABLE aircrafts_on_market;
