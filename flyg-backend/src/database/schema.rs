@@ -40,6 +40,7 @@ table! {
         id -> Int4,
         aircraft_id -> Int4,
         pilot_id -> Int4,
+        date_of_departure -> Varchar,
         departure_airport_id -> Int4,
         arrival_airport_id -> Int4,
         off_block_time -> Int4,
