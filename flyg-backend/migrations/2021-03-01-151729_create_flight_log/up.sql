@@ -4,9 +4,9 @@ CREATE TABLE flight_log
     id                   SERIAL PRIMARY KEY,
     aircraft_id          INT     NOT NULL,     -- the id of the aircraft which was used for the flight
     pilot_id             INT     NOT NULL,     -- the pilot in command for this flight
-    date_of_departure    VARCHAR NOT NULL,     -- the date of the departure (UTC-based) in a format of YYYY-MM-DD
     departure_airport_id INT     NOT NULL,     -- the airport from which the plane departed from
     arrival_airport_id   INT     NOT NULL,     -- the airport on which the plane arrived
+    date_of_flight       VARCHAR NOT NULL,     -- the date of the departure for the flight (UTC-based) in a format of YYYY-MM-DD
     off_block_time       INT     NOT NULL,     -- the off-block time for the flight (in UTC without separation, e.g. 14:56 is 1456 where as 03:31 would be 331)
     takeoff_time         INT     NOT NULL,     -- the takeoff time for the flight (see example above)
     landing_time         INT     NOT NULL,     -- the landing time for the flight (see example above)
