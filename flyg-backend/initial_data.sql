@@ -28,4 +28,4 @@ INSERT INTO aircraft_models
 VALUES (DEFAULT, 'Beechcraft', 'Baron G58');
 
 INSERT INTO aircraft
-VALUES (DEFAULT, 1, 'D-GKHT', 1);
+VALUES (DEFAULT, 1, 'D-IOTA', 1);
