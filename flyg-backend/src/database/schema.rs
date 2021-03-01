@@ -16,6 +16,14 @@ table! {
 }
 
 table! {
+    aircrafts_on_market (id) {
+        id -> Int4,
+        aircraft_id -> Int4,
+        price -> Int4,
+    }
+}
+
+table! {
     airports (id) {
         id -> Int4,
         icao_code -> Varchar,
@@ -24,6 +32,22 @@ table! {
         longitude -> Float4,
         latitude -> Float4,
         name -> Varchar,
+    }
+}
+
+table! {
+    flight_log (id) {
+        id -> Int4,
+        aircraft_id -> Int4,
+        pilot_id -> Int4,
+        departure_airport_id -> Int4,
+        arrival_airport_id -> Int4,
+        off_block_time -> Int4,
+        takeoff_time -> Int4,
+        landing_time -> Int4,
+        on_block_time -> Int4,
+        distance -> Nullable<Int4>,
+        duration -> Nullable<Varchar>,
     }
 }
 
@@ -58,13 +82,18 @@ table! {
 
 joinable!(aircraft -> aircraft_models (aircraft_model));
 joinable!(aircraft -> users (owner));
+joinable!(aircrafts_on_market -> aircraft (aircraft_id));
+joinable!(flight_log -> aircraft (aircraft_id));
+joinable!(flight_log -> users (pilot_id));
 joinable!(runway_airport_associations -> airports (airport_id));
 joinable!(runway_airport_associations -> runways (runway_id));
 
 allow_tables_to_appear_in_same_query!(
     aircraft,
     aircraft_models,
+    aircrafts_on_market,
     airports,
+    flight_log,
     runway_airport_associations,
     runways,
     users,
