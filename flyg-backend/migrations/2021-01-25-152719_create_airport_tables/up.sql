@@ -4,8 +4,7 @@ CREATE TABLE airports
     icao_code   VARCHAR(4) NOT NULL UNIQUE, -- the official ICAO code of the airport
     last_update TIMESTAMP  NOT NULL,        -- when were the information updated the last time?
     country     VARCHAR(2) NOT NULL,        -- two letter country code
-    longitude   REAL       NOT NULL,        -- with 6 decimal places
-    latitude    REAL       NOT NULL,        -- with 6 decimal places
+    location    GEOGRAPHY  NOT NULL,        -- the coordinates where the airport is
     name        VARCHAR    NOT NULL         -- in English
 );
 

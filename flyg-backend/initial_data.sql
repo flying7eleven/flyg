@@ -1,9 +1,9 @@
 INSERT INTO airports
-VALUES (DEFAULT, 'EDKA', '2021-01-31 12:00:00', 'DE', 50.823333, 6.186389, 'Aachen Merzbrück Airfield'),
-       (DEFAULT, 'EDLN', '2021-01-31 12:00:00', 'DE', 51.230278, 6.504444, 'Mönchengladbach Airport'),
-       (DEFAULT, 'EDRK', '2021-01-31 12:00:00', 'DE', 50.324739, 7.527305, 'Koblenz-Winningen Airport'),
-       (DEFAULT, 'EDLA', '2021-01-31 12:00:00', 'DE', 51.483333, 7.899333, 'Arnsberg-Menden Airport'),
-       (DEFAULT, 'EDDL', '2021-01-31 12:00:00', 'DE', 51.280925, 6.757311, 'Düsseldorf Airport');
+VALUES (DEFAULT, 'EDKA', '2021-01-31 12:00:00', 'DE', 'SRID=4326;POINT(6.186389 50.823333)', 'Aachen Merzbrück Airfield'),
+       (DEFAULT, 'EDLN', '2021-01-31 12:00:00', 'DE', 'SRID=4326;POINT(6.504444 51.230278)', 'Mönchengladbach Airport'),
+       (DEFAULT, 'EDRK', '2021-01-31 12:00:00', 'DE', 'SRID=4326;POINT(7.527305 50.324739)', 'Koblenz-Winningen Airport'),
+       (DEFAULT, 'EDLA', '2021-01-31 12:00:00', 'DE', 'SRID=4326;POINT(7.899333 51.483333)', 'Arnsberg-Menden Airport'),
+       (DEFAULT, 'EDDL', '2021-01-31 12:00:00', 'DE', 'SRID=4326;POINT(6.757311 51.280925)', 'Düsseldorf Airport');
 
 INSERT INTO runways
 VALUES (DEFAULT, 66, 246, DEFAULT, 1160, 18),

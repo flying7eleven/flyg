@@ -204,8 +204,8 @@ pub fn get_airport_information(
                 country_code: airport_infos.country,
                 name: airport_infos.name,
                 position: Coordinates {
-                    latitude: airport_infos.latitude,
-                    longitude: airport_infos.longitude,
+                    latitude: airport_infos.location.y as f32,
+                    longitude: airport_infos.location.x as f32,
                 },
                 runways,
             }));

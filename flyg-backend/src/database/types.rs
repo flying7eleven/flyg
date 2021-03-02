@@ -1,11 +1,11 @@
-use std::io::prelude::*;
-use std::convert::From;
-use diesel::deserialize::{self, FromSql};
-use diesel::serialize::{self, IsNull, Output, ToSql};
-use diesel::pg::Pg;
-use postgis::ewkb::Point;
-use crate::database::sql_types::*;
 use crate::database::sql_types::Geography;
+use crate::database::sql_types::*;
+use diesel::deserialize::{self, FromSql};
+use diesel::pg::Pg;
+use diesel::serialize::{self, IsNull, Output, ToSql};
+use postgis::ewkb::Point;
+use std::convert::From;
+use std::io::prelude::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, FromSqlRow, AsExpression)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -31,8 +31,8 @@ impl From<GeogPoint> for Point {
 
 impl FromSql<Geography, Pg> for GeogPoint {
     fn from_sql(bytes: Option<&[u8]>) -> deserialize::Result<Self> {
-        use std::io::Cursor;
         use postgis::ewkb::EwkbRead;
+        use std::io::Cursor;
         let bytes = not_none!(bytes);
         let mut rdr = Cursor::new(bytes);
         Ok(Point::read_ewkb(&mut rdr)?.into())
