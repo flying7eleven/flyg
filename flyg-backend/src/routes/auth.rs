@@ -52,10 +52,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
     type Error = AuthorizationError;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<AuthenticatedUser, AuthorizationError> {
-        use crate::FlygSettings;
         use jsonwebtoken::decode;
         use log::error;
-        use rocket::State;
 
         //
         let maybe_authorization_header = request.headers().get_one("Authorization");
