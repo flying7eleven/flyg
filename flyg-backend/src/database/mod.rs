@@ -1,6 +1,8 @@
 pub mod airports;
 pub mod auth;
 pub mod schema;
+pub mod sql_types;
+pub mod types;
 
 #[derive(Debug)]
 pub enum FlygDatabaseError {
