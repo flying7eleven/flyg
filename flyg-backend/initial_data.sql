@@ -32,3 +32,6 @@ VALUES (DEFAULT, 'Beechcraft', 'Baron G58');
 
 INSERT INTO aircraft
 VALUES (DEFAULT, 1, 'D-IOTA', 1);
+
+INSERT INTO flight_log
+VALUES (DEFAULT, 1, 1, 2, 4, '2020-12-24', 1303, 1312, 1443, 1447, NULL, NULL);
