@@ -113,6 +113,7 @@ table! {
         last_name -> Varchar,
         email_address -> Varchar,
         password -> Varchar,
+        is_admin -> Bool,
     }
 }
 

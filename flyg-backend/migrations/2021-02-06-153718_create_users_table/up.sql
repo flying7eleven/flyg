@@ -7,5 +7,6 @@ CREATE TABLE users
     first_name    VARCHAR(64)  NOT NULL,
     last_name     VARCHAR(64)  NOT NULL,
     email_address VARCHAR(255) NOT NULL UNIQUE,
-    password      VARCHAR(255) NOT NULL
+    password      VARCHAR(255) NOT NULL,
+    is_admin      BOOLEAN NOT NULL DEFAULT FALSE
 );
