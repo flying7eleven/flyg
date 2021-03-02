@@ -1,5 +1,4 @@
 use crate::database::sql_types::Geography;
-use crate::database::sql_types::*;
 use diesel::deserialize::{self, FromSql};
 use diesel::pg::Pg;
 use diesel::serialize::{self, IsNull, Output, ToSql};
@@ -8,24 +7,35 @@ use std::convert::From;
 use std::io::prelude::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, FromSqlRow, AsExpression)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[sql_type = "Geography"]
 pub struct GeogPoint {
-    pub x: f64, // lon
-    pub y: f64, // lat
+    pub longitude: f64, // lon
+    pub latitude: f64,  // lat
     pub srid: Option<i32>,
 }
 
 impl From<Point> for GeogPoint {
     fn from(p: Point) -> Self {
         let Point { x, y, srid } = p;
-        Self { x, y, srid }
+        Self {
+            longitude: x,
+            latitude: y,
+            srid,
+        }
     }
 }
 impl From<GeogPoint> for Point {
     fn from(p: GeogPoint) -> Self {
-        let GeogPoint { x, y, srid } = p;
-        Self { x, y, srid }
+        let GeogPoint {
+            longitude,
+            latitude,
+            srid,
+        } = p;
+        Self {
+            x: longitude,
+            y: latitude,
+            srid,
+        }
     }
 }
 
