@@ -1,5 +1,6 @@
 pub mod airports;
 pub mod auth;
+#[allow(unused_imports)]
 pub mod schema;
 pub mod sql_types;
 pub mod types;
