@@ -1,4 +1,7 @@
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     aircraft (id) {
         id -> Int4,
         aircraft_model -> Int4,
@@ -8,6 +11,9 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     aircraft_models (id) {
         id -> Int4,
         manufacturer -> Varchar,
@@ -16,6 +22,9 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     aircrafts_on_market (id) {
         id -> Int4,
         aircraft_id -> Int4,
@@ -24,18 +33,23 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     airports (id) {
         id -> Int4,
         icao_code -> Varchar,
         last_update -> Timestamp,
         country -> Varchar,
-        longitude -> Float4,
-        latitude -> Float4,
+        location -> Geography,
         name -> Varchar,
     }
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     flight_log (id) {
         id -> Int4,
         aircraft_id -> Int4,
@@ -53,6 +67,9 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     runway_airport_associations (id) {
         id -> Int4,
         airport_id -> Int4,
@@ -61,6 +78,9 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     runways (id) {
         id -> Int4,
         primary_direction -> Int4,
@@ -72,12 +92,29 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
+    spatial_ref_sys (srid) {
+        srid -> Int4,
+        auth_name -> Nullable<Varchar>,
+        auth_srid -> Nullable<Int4>,
+        srtext -> Nullable<Varchar>,
+        proj4text -> Nullable<Varchar>,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::database::sql_types::*;
+
     users (id) {
         id -> Int4,
         first_name -> Varchar,
         last_name -> Varchar,
         email_address -> Varchar,
         password -> Varchar,
+        is_admin -> Bool,
     }
 }
 
@@ -97,5 +134,6 @@ allow_tables_to_appear_in_same_query!(
     flight_log,
     runway_airport_associations,
     runways,
+    spatial_ref_sys,
     users,
 );

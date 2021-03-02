@@ -1,5 +1,6 @@
 use super::schema::{airports, runway_airport_associations, runways};
 use super::FlygDatabaseError;
+use crate::database::types::GeogPoint;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::PgConnection;
@@ -12,8 +13,7 @@ pub struct Airport {
     pub icao_code: String,
     pub last_update: NaiveDateTime,
     pub country: String,
-    pub longitude: f32,
-    pub latitude: f32,
+    pub location: GeogPoint,
     pub name: String,
 }
 
@@ -108,52 +108,58 @@ pub fn get_runway_information_for_icao_code(
 }
 
 #[derive(Queryable)]
-struct AirportByDistance {
-    icao_code: String,
-    longitude: f32,
-    latitude: f32,
-    distance: f64,
+pub struct AirportByDistance {
+    pub icao_code: String,
+    #[allow(dead_code)]
+    location: GeogPoint,
+    pub distance: f64,
 }
 
+/// Query the database for the closest airports to a specific location.
+///
+/// The closest 3 airports to a specified location will be returned with their ICAO code as well
+/// as the distance to the point in meters.
+///
+/// # Arguments
+/// * `database_connection` - The connection to the database servers for the query.
+/// * `latitude_reference` - The latitude to which the distance should be calculated.
+/// * `longitude_reference` - The longitude to which the distance should be calculated.
+///
+/// # Errors
+/// Will return `Err` if the requested runway information could not be found. The result
+/// might be one of the following:
+/// * `NoResults` - Could not find the airport with the given ICAO code.
 pub fn get_closest_airports_for_coordinates(
     database_connection: &PgConnection,
     latitude_reference: f32,
     longitude_reference: f32,
-) -> Result<Vec<(String, f32)>, FlygDatabaseError> {
-    // TODO: https://stackoverflow.com/questions/53596947/how-do-i-create-a-custom-diesel-query-using-sql-functions-with-user-provided-inp
-    // TODO: https://docs.rs/diesel/1.3.3/diesel/macro.sql_function.html
-    use super::schema::airports::dsl::{airports, icao_code, latitude, longitude};
+) -> Result<Vec<AirportByDistance>, FlygDatabaseError> {
+    use super::schema::airports::dsl::{airports, icao_code, location};
     use diesel::dsl::sql;
     use diesel::sql_types::Double;
     use log::error;
 
-    let result = match airports.select(
-        (
+    // try to query the closest airports
+    return match airports
+        .select((
             icao_code,
-            longitude,
-            latitude,
-            sql::<Double>(
-                &format!("(3959.0 * acos(cos(radians({lat})) * cos(radians(latitude)) * cos(radians(longitude) - radians({long})) + sin(radians({lat})) * sin(radians(latitude)))) AS distance", lat=latitude_reference, long=longitude_reference)
-            )
-        )
-    )
+            location,
+            sql::<Double>(&format!(
+                "ST_Distance(location::geography, 'SRID=4326;POINT({long} {lat})'::geometry) AS distance",
+                lat = latitude_reference,
+                long = longitude_reference
+            )),
+        ))
         .order(sql::<Double>("distance ASC"))
         .limit(3)
         .load::<AirportByDistance>(database_connection)
     {
-        Ok(result) => result,
+        Ok(result) => Ok(result),
         Err(error) => {
             error!("{:?}", error);
-            return Err(FlygDatabaseError::NoResults);
+            Err(FlygDatabaseError::NoResults)
         }
     };
-
-    //
-    let mut airports_to_return = vec![];
-    for airport in result {
-        airports_to_return.push((airport.icao_code, airport.distance as f32))
-    }
-    Ok(airports_to_return)
 }
 
 /// Query the database for the runway information for a specific airport.

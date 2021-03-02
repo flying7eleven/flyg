@@ -11,6 +11,7 @@ pub struct User {
     pub last_name: String,
     pub email_address: String,
     pub password: String,
+    pub is_admin: bool,
 }
 
 /// Get the user record for a specific email address.

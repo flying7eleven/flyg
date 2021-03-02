@@ -2,7 +2,7 @@ version: "2"
 services:
   flyg_dev_database:
     container_name: flyg_dev_database
-    image: postgres:13
+    image: postgis/postgis:13-master
     environment:
       - POSTGRES_USER=debuguser
       - POSTGRES_PASSWORD=debugpassword
