@@ -110,6 +110,7 @@ pub fn get_runway_information_for_icao_code(
 #[derive(Queryable)]
 struct AirportByDistance {
     icao_code: String,
+    #[allow(dead_code)]
     location: GeogPoint,
     distance: f64,
 }
