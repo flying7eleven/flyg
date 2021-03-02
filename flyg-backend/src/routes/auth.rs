@@ -27,6 +27,7 @@ struct Claims {
     iss: String,
     nbf: usize,
     sub: String,
+    admin: bool,
 }
 
 /// The representation of an authenticated user. As soon as this is included in the parameters
@@ -174,7 +175,7 @@ lazy_static! {
 /// This method will return a new access token for the given `subject`. It will *not* check
 /// if the subject is authorized to get a token or of the subject is even valid. This has to
 /// be done from the calling party!
-fn get_token_for_user(subject: &String, private_key: &String) -> Option<String> {
+fn get_token_for_user(subject: &String, is_admin: bool, private_key: &String) -> Option<String> {
     use jsonwebtoken::{encode, EncodingKey, Header};
     use log::error;
 
@@ -201,6 +202,7 @@ fn get_token_for_user(subject: &String, private_key: &String) -> Option<String> 
         iss: TOKEN_ISSUER.to_string(),
         nbf: token_issued_at + 1,
         sub: subject.clone(),
+        admin: is_admin,
     };
 
     // get the signing key for the token
@@ -286,8 +288,11 @@ pub fn get_login_token(
 
     // if we get here, the we ensured that the user is known and that the supplied password
     // was valid, we can generate a new access token and return it to the calling party
-    if let Some(token) = get_token_for_user(&login_information.username, &configuration.private_key)
-    {
+    if let Some(token) = get_token_for_user(
+        &login_information.username,
+        user.is_admin,
+        &configuration.private_key,
+    ) {
         return Ok(Json(TokenResponse {
             access_token: token,
         }));
