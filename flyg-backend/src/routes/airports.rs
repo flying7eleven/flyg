@@ -61,7 +61,15 @@ pub struct AirportDistance {
     /// The four-letter ICAO code of the represented airport.
     icao_code: String,
     /// The distance to the airport in nautical miles.
-    distance: f32,
+    distance: u32,
+}
+
+/// Convert meters into (rounded) nautical miles.
+///
+/// # Arguments
+/// * `meters` - The meters which should be converted.
+fn convert_meters_to_nautical_miles(meters: f64) -> u32 {
+    (meters * 0.00054).round() as u32
 }
 
 /// TODO
@@ -132,7 +140,7 @@ pub fn get_closest_airport_to_position(
             for current_airport_tuple in airports {
                 prepared_airports.push(AirportDistance {
                     icao_code: current_airport_tuple.icao_code,
-                    distance: current_airport_tuple.distance as f32,
+                    distance: convert_meters_to_nautical_miles(current_airport_tuple.distance),
                 })
             }
             prepared_airports
