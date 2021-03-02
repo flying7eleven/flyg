@@ -131,8 +131,8 @@ pub fn get_closest_airport_to_position(
             let mut prepared_airports = vec![];
             for current_airport_tuple in airports {
                 prepared_airports.push(AirportDistance {
-                    icao_code: current_airport_tuple.0,
-                    distance: current_airport_tuple.1,
+                    icao_code: current_airport_tuple.icao_code,
+                    distance: current_airport_tuple.distance as f32,
                 })
             }
             prepared_airports
