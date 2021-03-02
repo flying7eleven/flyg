@@ -21,10 +21,8 @@ pub struct LoginInformation {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-    aud: Vec<String>,
     exp: usize,
     iat: usize,
-    iss: String,
     nbf: usize,
     sub: String,
     admin: bool,
@@ -83,8 +81,6 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
                 // specify the parameter for the validation of the token
                 let mut validation_parameter = Validation::new(Algorithm::RS256);
                 validation_parameter.leeway = 5; // allow a time difference of max. 5 seconds
-                validation_parameter.iss = Some(TOKEN_ISSUER.to_string());
-                validation_parameter.aud = None; // TODO: we should validate the audience at some point
                 validation_parameter.validate_exp = true;
                 validation_parameter.validate_nbf = true;
 
@@ -165,9 +161,6 @@ pub struct TokenResponse {
 lazy_static! {
     /// The time in seconds a token is valid.
     static ref TOKEN_LIFETIME_IN_SECONDS: usize = 60 * 60;
-
-    /// TODO
-    static ref TOKEN_ISSUER: &'static str = "flyg-backend";
 }
 
 /// # Get an access token to access the API
@@ -196,10 +189,8 @@ fn get_token_for_user(subject: &String, is_admin: bool, private_key: &String) ->
 
     // define the content of the actual token
     let token_claims = Claims {
-        aud: vec!["https://www.flyg.link".to_string()],
         exp: token_expires_at,
         iat: token_issued_at,
-        iss: TOKEN_ISSUER.to_string(),
         nbf: token_issued_at + 1,
         sub: subject.clone(),
         admin: is_admin,
