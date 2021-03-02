@@ -18,5 +18,18 @@ The JWT token is signed with an asymmetric RSA key. To generate this key, execut
 1. Generate a RSA key pair by executing `openssl genrsa -out jwt_token_private.pem 4096`
 2. Extract the public key via `openssl rsa -in jwt_token_private.pem -out jwt_token_public.pem -pubout -outform PEM`
 
+## Initializing the database with content
+1. Log in into the docker container for the database `docker exec -it flyg_database sh`
+2. Get a database shell to the database using `psql -U flyg -d flyg` (if the user is `flyg` as well as the database)
+3. Enter the password for the database user (if requested)
+4. Execute all inserts you need to initialize the database
+5. Type `\q` to quit the database shell
+6. Type `exit` to exit the docker shell
+
+## Generate a password hash on the comand line
+1. Ensure the Apache tools are installed (e.g. `pacman -S apache` on Arch Linux)
+2. Use `htpasswd -nbBC 12 USER_PLACEHOLDER example` to generate the hash for the password `example`
+3. Use the part right after `USER_PLACEHOLDER:` as the password hash
+
 ## Test data
 (51.275397228764334, 6.752361168007028) -> EDDL should be the closest (is a parking position)
