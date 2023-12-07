@@ -1,0 +1,9 @@
+node_modules/
+target/
+!.gitignore
+!.gitsubmodules
+dist
+dist-ssr
+*.local
+.idea
+.DS_Store

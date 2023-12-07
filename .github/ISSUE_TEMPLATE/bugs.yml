@@ -1,0 +1,49 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - flying7eleven
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: For which component are you opening an issue?
+      description: Help us to determine which part of the whole project is affected by the reported issue.
+      options:
+        - Frontend (Web)
+        - Backend (API)
+        - X-Plane 12 Plugin
+    validations:
+      required: true
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: What happened?
+      description: Please tell us what happend.
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What was the behavior you expected?
+      description: Please tell us what you have expected instead.
+      placeholder: Tell us what you expected.
+      value: "It should not have happened!"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/flying7eleven/flyg/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+

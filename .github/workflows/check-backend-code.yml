@@ -1,0 +1,30 @@
+name: analyze backend code
+
+on:
+  push:
+    branches: [ 'main' ]
+    paths:
+      - 'flyg-backend/**'
+  pull_request:
+    branches: [ 'main' ]
+  schedule:
+    - cron: '41 1 * * 1'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable && rustup default stable
+      - run: cargo install clippy-sarif sarif-fmt
+      - run: cargo clippy  --all-features --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
+        continue-on-error: true
+        working-directory: flyg-backend
+      - uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: flyg-backend/rust-clippy-results.sarif
+          wait-for-processing: true

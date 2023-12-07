@@ -1,0 +1,12 @@
+[workspace]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Tim Janke <tim+github@janke.biz>"]
+license = "MIT"
+readme = "../README.md"
+repository = "https://github.com/flying7eleven/flyg"
+exclude = ["../.github/", "../.gitignore"]
+publish = false
+rust-version = "1.71.0"
