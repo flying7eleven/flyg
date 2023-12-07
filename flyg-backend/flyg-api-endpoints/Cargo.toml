@@ -1,0 +1,11 @@
+[package]
+name = "flyg-api-endpoints"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+exclude.workspace = true
+publish.workspace = true
+rust-version.workspace = true
