@@ -9,3 +9,32 @@ repository.workspace = true
 exclude.workspace = true
 publish.workspace = true
 rust-version.workspace = true
+
+[dependencies.actix-web]
+version = "4.4.0"
+default-features = false
+features = ["macros", "http2"]
+
+[dependencies.futures]
+version= "0.3.29"
+default-features = false
+
+[dependencies.serde]
+version = "1.0.193"
+default-features = false
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0.108"
+default-features = false
+features = ["std"]
+
+[dependencies.utoipa]
+version = "4.1.0"
+default-features = false
+features = ["actix_extras"]
+
+[dependencies.utoipa-swagger-ui]
+version = "5.0.0"
+default-features = false
+features = ["actix-web", "debug-embed"]
