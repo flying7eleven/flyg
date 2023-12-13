@@ -1,6 +1,6 @@
 pub(crate) mod routes;
 
-use crate::routes::auth;
+use crate::routes::authorization;
 use rocket::log::private::LevelFilter;
 use rocket::{main, routes};
 use std::env;
@@ -9,8 +9,12 @@ use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(auth::authenticate_user),
-    components(schemas(auth::AuthenticateUserParams, auth::AuthenticatedTokenResult,))
+    paths(authorization::authenticate_user, authorization::refresh_token),
+    components(schemas(
+        authorization::AuthenticateUserParams,
+        authorization::AuthenticatedTokenResult,
+        authorization::RefreshTokenRequest
+    ))
 )]
 struct ApiDoc;
 
@@ -73,7 +77,13 @@ async fn main() {
             "/",
             SwaggerUi::new("/docs/<_..>").url("/api-docs/openapi.json", ApiDoc::openapi()),
         )
-        .mount("/v1", routes![auth::authenticate_user])
+        .mount(
+            "/v1",
+            routes![
+                authorization::authenticate_user,
+                authorization::refresh_token
+            ],
+        )
         .launch()
         .await;
 }

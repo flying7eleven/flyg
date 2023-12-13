@@ -28,6 +28,14 @@ pub struct AuthenticatedTokenResult {
     pub refresh_token: String,
 }
 
+/// The required information for refreshing the `access_token` and getting a new `refresh_token`.
+#[derive(Serialize, Deserialize, Debug, Clone, ToSchema)]
+pub struct RefreshTokenRequest {
+    /// The refresh token which should be used to create a new token pair.
+    #[schema(example = "eyJhbGciOiJIUzI1NiIsInR5...")]
+    pub refresh_token: String,
+}
+
 #[utoipa::path(
     post,
     context_path = "/v1",
@@ -38,9 +46,26 @@ pub struct AuthenticatedTokenResult {
         (status = StatusCode::FORBIDDEN, description = "The supplied credentials are not valid and the user does not get a token."),
     ),
 )]
-#[post("/auth", data = "<auth_data>")]
+#[post("/authorization/login", data = "<auth_data>")]
 pub async fn authenticate_user(
     auth_data: Json<AuthenticateUserParams>,
+) -> Result<Json<AuthenticatedTokenResult>, Status> {
+    Err(Status::NotImplemented)
+}
+
+#[utoipa::path(
+    post,
+    context_path = "/v1",
+    request_body(content = RefreshTokenRequest, description = "The refresh token which should be used to generate a new token pair.", content_type = "application/json"),
+    responses(
+        (status = StatusCode::OK, description = "The refresh token was used to create a new token pair which can be used for all further requests.", body = AuthenticatedTokenResult, content_type = "application/json"),
+        (status = StatusCode::BAD_REQUEST, description = "The supplied data seems to be in an invalid format and cannot be processed."),
+        (status = StatusCode::FORBIDDEN, description = "The supplied refresh token was not valid (anymore)."),
+    ),
+)]
+#[post("/authorization/token", data = "<refresh_data>")]
+pub async fn refresh_token(
+    refresh_data: Json<RefreshTokenRequest>,
 ) -> Result<Json<AuthenticatedTokenResult>, Status> {
     Err(Status::NotImplemented)
 }
