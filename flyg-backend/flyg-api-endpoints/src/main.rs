@@ -1,19 +1,25 @@
 pub(crate) mod routes;
 
-use crate::routes::authorization;
+use crate::routes::{authorization, pilot};
 use rocket::log::private::LevelFilter;
 use rocket::{main, routes};
 use std::env;
-use utoipa::OpenApi;
+use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
+use utoipa::{Modify, OpenApi};
 use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(authorization::authenticate_user, authorization::refresh_token),
+    paths(
+        authorization::authenticate_user,
+        authorization::refresh_token,
+        pilot::get_pilot_info
+    ),
     components(schemas(
         authorization::AuthenticateUserParams,
         authorization::AuthenticatedTokenResult,
-        authorization::RefreshTokenRequest
+        authorization::RefreshTokenRequest,
+        pilot::PilotInformationResult
     ))
 )]
 struct ApiDoc;
@@ -81,7 +87,8 @@ async fn main() {
             "/v1",
             routes![
                 authorization::authenticate_user,
-                authorization::refresh_token
+                authorization::refresh_token,
+                pilot::get_pilot_info
             ],
         )
         .launch()
