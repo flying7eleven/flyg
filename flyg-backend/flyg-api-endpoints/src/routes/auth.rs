@@ -1,5 +1,6 @@
-use actix_web::web::Form;
-use actix_web::{post, HttpResponse};
+use rocket::http::Status;
+use rocket::post;
+use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -29,15 +30,17 @@ pub struct AuthenticatedTokenResult {
 
 #[utoipa::path(
     post,
-    path = "/v1/auth",
-    request_body(content = AuthenticateUserParams, description = "", content_type = "multipart/form-data"),
+    context_path = "/v1",
+    request_body(content = AuthenticateUserParams, description = "The username and the passwort which should be used for authentication.", content_type = "application/json"),
     responses(
         (status = StatusCode::OK, description = "The user was successfully authorized and a token is returned.", body = AuthenticatedTokenResult, content_type = "application/json"),
         (status = StatusCode::BAD_REQUEST, description = "The supplied data seems to be in an invalid format and cannot be processed."),
-        (status = StatusCode::UNAUTHORIZED, description = "The supplied credentials are not valid and the user does not get a token."),
+        (status = StatusCode::FORBIDDEN, description = "The supplied credentials are not valid and the user does not get a token."),
     ),
 )]
-#[post("/v1/auth")]
-pub async fn authenticate_user(_auth_data: Form<AuthenticateUserParams>) -> HttpResponse {
-    HttpResponse::NotImplemented().into()
+#[post("/auth", data = "<auth_data>")]
+pub async fn authenticate_user(
+    auth_data: Json<AuthenticateUserParams>,
+) -> Result<Json<AuthenticatedTokenResult>, Status> {
+    Err(Status::NotImplemented)
 }
