@@ -10,13 +10,17 @@ exclude.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
-[dependencies.actix-web]
-version = "4.4.0"
+[dependencies.chrono]
+version = "0.4.31"
 default-features = false
-features = ["macros", "http2"]
+features = ["clock"]
 
-[dependencies.futures]
-version= "0.3.29"
+[dependencies.fern]
+version = "0.6.2"
+default-features = false
+
+[dependencies.rocket]
+version = "0.5.0"
 default-features = false
 
 [dependencies.serde]
@@ -32,9 +36,9 @@ features = ["std"]
 [dependencies.utoipa]
 version = "4.1.0"
 default-features = false
-features = ["actix_extras"]
+features = ["rocket_extras"]
 
 [dependencies.utoipa-swagger-ui]
 version = "5.0.0"
 default-features = false
-features = ["actix-web", "debug-embed"]
+features = ["rocket", "debug-embed"]
